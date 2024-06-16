@@ -70,6 +70,7 @@ public class MenuScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             game.showGameScreen();
         }
+        
 
         if (Gdx.input.isTouched()) {
             Vector3 touchPos = new Vector3();

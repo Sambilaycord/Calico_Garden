@@ -18,6 +18,7 @@ public class GameScreen implements Screen {
     private OrthographicCamera camera;
     private ShelfSystem shelfSystem;
     private Texture potTexture;
+    private Texture snapTexture;
 
     public GameScreen(CalicoGarden game) {
         this.game = game;
@@ -31,7 +32,16 @@ public class GameScreen implements Screen {
         cat = new Sprite(new Texture("Cat.png"));
 
         potTexture = new Texture("Pots/pot.png");
-        shelfSystem = new ShelfSystem(potTexture, 0, 0);
+        snapTexture = new Texture("Pots/potSnap.png");
+        float[][] lockPositions = {
+            {50f, 450f, 880f}, // Y: 50, Left X: 100, Right X: 300
+            {250f, 350f, 1150f}, // Y: 250, Left X: 50, Right X: 450
+            {460f, 450f, 1100f}, // Y: 460, Left X: 0, Right X: (screen width - pot width)
+            {625f, 650f, 1050f} // Y: 625, Left X: 200, Right X: screen width / 2
+        };
+        
+        shelfSystem = new ShelfSystem(potTexture, snapTexture, lockPositions);
+        
     }
 
     @Override
@@ -45,23 +55,7 @@ public class GameScreen implements Screen {
             game.showMenuScreen();
         }
 
-        // Check for click on the pot and update dragging state accordingly
-        if (shelfSystem.isPotClicked(Gdx.input.getX(), Gdx.input.getY())) {
-            shelfSystem.setDragging(false); // Stop dragging on click
-
-            float potX = Gdx.input.getX() - shelfSystem.getPotTexture().getWidth() / 4f;
-            float potY = Gdx.input.getY() - shelfSystem.getPotTexture().getHeight() / 4f;
-            
-            // Clamp pot position to stay within screen bounds
-            potX = Math.min(potX, Gdx.graphics.getWidth() - shelfSystem.getPotTexture().getWidth());
-            potX = Math.max(potX, 0);
-            potY = Math.min(potY, Gdx.graphics.getHeight() - shelfSystem.getPotTexture().getHeight());
-            potY = Math.max(potY, 0);
-            
-            shelfSystem.setPotX(potX);
-            shelfSystem.setPotY(potY);
-        }
-
+        // Update the ShelfSystem with current mouse position
         shelfSystem.update(delta, Gdx.input.getX(), Gdx.input.getY());
 
         sprite.begin();
@@ -75,9 +69,7 @@ public class GameScreen implements Screen {
             sprite.draw(accessory, 0, 0); // Adjust position to be on top of the cat
         }
 
-
-        sprite.draw(shelfSystem.getPotTexture(), shelfSystem.getPotX(), shelfSystem.getPotY(), shelfSystem.getPotTexture().getWidth() / 4f, shelfSystem.getPotTexture().getHeight() / 4f);
-
+        shelfSystem.draw(sprite);
 
         sprite.end();
     }
@@ -107,5 +99,6 @@ public class GameScreen implements Screen {
         sprite.dispose();
         bg.dispose();
         cat.getTexture().dispose();
+        potTexture.dispose();
     }
 }
