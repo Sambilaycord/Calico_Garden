@@ -28,9 +28,6 @@ public class GameScreen implements Screen {
         sprite = new SpriteBatch();
         bg = new Texture("bg.jpg");
         cat = new Texture("elgato.png");
-
-        potTexture = new Texture("Pots/pot.png");
-        shelfSystem = new ShelfSystem(potTexture, 0, 0);
     }
 
     @Override
