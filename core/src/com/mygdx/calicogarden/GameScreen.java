@@ -24,7 +24,7 @@ public class GameScreen implements Screen {
     public void show() {
         sprite = new SpriteBatch();
         bg = new Texture("bg.jpg");
-        cat = new Texture("elgato.png");
+        cat = new Texture("ming.png");
     }
 
     @Override

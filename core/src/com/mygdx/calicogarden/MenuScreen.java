@@ -24,6 +24,10 @@ public class MenuScreen implements Screen {
     private Rectangle accessoryBounds2;
     private Rectangle accessoryBounds3;
 
+    private Texture catAccessory1;
+    private Texture catAccessory2;
+    private Texture catAccessory3;
+
     private boolean accessory1Bol = false;
     private boolean accessory2Bol = false;
     private boolean accessory3Bol = false;
@@ -39,22 +43,21 @@ public class MenuScreen implements Screen {
     public void show() {
         sprite = new SpriteBatch();
         bg = new Texture("bg2.jfif");
-        accessory1 = new Texture("cat_loading.png");
-        accessory2 = new Texture("cat_looking.png");
-        accessory3 = new Texture("cat_phone.png");
+        accessory1 = new Texture("accessory1.png");
+        accessory2 = new Texture("accessory2.png");
+        accessory3 = new Texture("accessory3.png");
 
-        float accessory1X = 100;
-        float accessory1Y = 100;
-        float accessory2X = accessory1X + accessory1.getWidth() + 50; // 50 pixels padding between accessories
-        float accessory2Y = 100;
-        float accessory3X = accessory2X + accessory1.getWidth() + 50; // 50 pixels padding between accessories
-        float accessory3Y = 100;
+        catAccessory1 = new Texture("cat_accessory1.png");
+        catAccessory2 = new Texture("cat_accessory2.png");
+        catAccessory3 = new Texture("cat_accessory3.png");
 
+        float accessory2X = accessory1.getWidth(); // 50 pixels padding between accessories
+        float accessory3X = accessory2X + accessory1.getWidth(); // 50 pixels padding between accessories
 
         // Initialize the bounds for each accessory
-        accessoryBounds1 = new Rectangle(accessory1X, accessory1Y, accessory1.getWidth(), accessory1.getHeight());
-        accessoryBounds2 = new Rectangle(accessory2X, accessory2Y, accessory2.getWidth(), accessory2.getHeight());
-        accessoryBounds3 = new Rectangle(accessory3X, accessory3Y, accessory2.getWidth(), accessory2.getHeight());
+        accessoryBounds1 = new Rectangle(0, 400, accessory1.getWidth(), accessory1.getHeight());
+        accessoryBounds2 = new Rectangle(accessory2X, 400, accessory2.getWidth(), accessory2.getHeight());
+        accessoryBounds3 = new Rectangle(accessory3X, 400, accessory2.getWidth(), accessory2.getHeight());
     }
 
     @Override
@@ -86,13 +89,13 @@ public class MenuScreen implements Screen {
 
             // Check if the touch is within the bounds of accessory1
             if (accessoryBounds1.contains(touchPos.x, touchPos.y) && accessory1Bol) {
-                game.setSelectedAccessory(accessory1);
+                game.setSelectedAccessory(catAccessory1);
                 game.showGameScreen();
             } else if (accessoryBounds2.contains(touchPos.x, touchPos.y) && accessory2Bol) {
-                game.setSelectedAccessory(accessory2);
+                game.setSelectedAccessory(catAccessory2);
                 game.showGameScreen();
             } else if (accessoryBounds3.contains(touchPos.x, touchPos.y) && accessory3Bol) {
-                game.setSelectedAccessory(accessory3);
+                game.setSelectedAccessory(catAccessory3);
                 game.showGameScreen();
             }
         }
