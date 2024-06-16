@@ -5,9 +5,18 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class GameScreen implements Screen {
 
@@ -18,10 +27,12 @@ public class GameScreen implements Screen {
     private OrthographicCamera camera;
     private ShelfSystem shelfSystem;
     private Texture potTexture;
-
+    private BitmapFont font;    // Font for rendering text
+    
     public GameScreen(CalicoGarden game) {
         this.game = game;
         this.camera = game.getCamera();
+        this.font = new BitmapFont(); // Initialize the font for text rendering
     }
 
     @Override
@@ -29,7 +40,6 @@ public class GameScreen implements Screen {
         sprite = new SpriteBatch();
         bg = new Texture("GameScreen/GameScreenBackground.png");
         cat = new Sprite(new Texture("Cat.png"));
-
         potTexture = new Texture("Pots/pot.png");
         shelfSystem = new ShelfSystem(potTexture, 0, 0);
     }
@@ -41,8 +51,12 @@ public class GameScreen implements Screen {
         camera.update();
         sprite.setProjectionMatrix(camera.combined);
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
             game.showMenuScreen();
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+            game.showShopScreen();
         }
 
         // Check for click on the pot and update dragging state accordingly
@@ -77,7 +91,8 @@ public class GameScreen implements Screen {
 
 
         sprite.draw(shelfSystem.getPotTexture(), shelfSystem.getPotX(), shelfSystem.getPotY(), shelfSystem.getPotTexture().getWidth() / 4f, shelfSystem.getPotTexture().getHeight() / 4f);
-
+        // Display coins at bottom left corner
+        font.draw(sprite, "Coins: " + game.getCoins(), 20, 40);
 
         sprite.end();
     }
