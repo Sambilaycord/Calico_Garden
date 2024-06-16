@@ -17,7 +17,7 @@ public class ShelfSystem {
 
     public ShelfSystem(Texture potTexture, float shelfStartY, float shelfHeight) {
         this.potTexture = potTexture;
-        this.potX = 0; // Initial X-coordinate (adjust as needed)
+        this.potX = Gdx.graphics.getWidth() / 2f; // Initial X-coordinate (adjust as needed)
         this.potY = 0; // Initial Y-coordinate (adjust as needed)
         this.shelfStartY = shelfStartY;
         this.shelfHeight = shelfHeight;

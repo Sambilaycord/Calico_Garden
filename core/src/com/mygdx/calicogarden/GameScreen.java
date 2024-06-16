@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 
@@ -12,7 +13,7 @@ public class GameScreen implements Screen {
 
     private SpriteBatch sprite;
     private Texture bg;
-    private Texture cat;
+    private Sprite cat;
     private CalicoGarden game;
     private OrthographicCamera camera;
     private ShelfSystem shelfSystem;
@@ -26,8 +27,8 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         sprite = new SpriteBatch();
-        bg = new Texture("bg.jpg");
-        cat = new Texture("elgato.png");
+        bg = new Texture("GameScreen/GameScreenBackground.png");
+        cat = new Sprite(new Texture("Cat.png"));
 
         potTexture = new Texture("Pots/pot.png");
         shelfSystem = new ShelfSystem(potTexture, 0, 0);
@@ -66,7 +67,8 @@ public class GameScreen implements Screen {
         sprite.begin();
 
         sprite.draw(bg, 0, 0);
-        sprite.draw(cat, 0, 0);
+        cat.setSize(Gdx.graphics.getWidth() / 4f, Gdx.graphics.getHeight() / 2f);
+        cat.draw(sprite);
 
         Texture accessory = game.getSelectedAccessory();
         if (accessory != null) {
@@ -104,6 +106,6 @@ public class GameScreen implements Screen {
     public void dispose() {
         sprite.dispose();
         bg.dispose();
-        cat.dispose();
+        cat.getTexture().dispose();
     }
 }
