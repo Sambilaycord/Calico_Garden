@@ -41,7 +41,12 @@ public class GameScreen implements Screen {
         };
         
         shelfSystem = new ShelfSystem(potTexture, snapTexture, lockPositions);
-        
+
+        // Set the pot position if it has been saved previously
+        if (game.getPotX() != -1 && game.getPotY() != -1) {
+            shelfSystem.setPotX(game.getPotX());
+            shelfSystem.setPotY(game.getPotY());
+        }
     }
 
     @Override
@@ -52,6 +57,8 @@ public class GameScreen implements Screen {
         sprite.setProjectionMatrix(camera.combined);
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+            // Save the pot position before switching to the menu
+            game.setPotPosition(shelfSystem.getPotX(), shelfSystem.getPotY());
             game.showMenuScreen();
         }
 
