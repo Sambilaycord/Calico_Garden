@@ -19,6 +19,7 @@ public class GameScreen implements Screen {
     private ShelfSystem shelfSystem;
     private Texture potTexture;
     private Texture snapTexture;
+    private Texture potTexture2;
 
     public GameScreen(CalicoGarden game) {
         this.game = game;
@@ -32,7 +33,9 @@ public class GameScreen implements Screen {
         cat = new Sprite(new Texture("Cat.png"));
 
         potTexture = new Texture("Pots/pot.png");
+        potTexture2 = new Texture("Pots/Pot2.png");
         snapTexture = new Texture("Pots/potSnap.png");
+
         float[][] lockPositions = {
             {50f, 450f, 880f}, // Y: 50, Left X: 100, Right X: 300
             {250f, 350f, 1150f}, // Y: 250, Left X: 50, Right X: 450
@@ -40,8 +43,8 @@ public class GameScreen implements Screen {
             {625f, 650f, 1050f} // Y: 625, Left X: 200, Right X: screen width / 2
         };
         
-        shelfSystem = new ShelfSystem(potTexture, snapTexture, lockPositions);
-
+        shelfSystem = new ShelfSystem(potTexture, potTexture2, snapTexture, lockPositions);
+        
         // Set the pot position if it has been saved previously
         if (game.getPotX() != -1 && game.getPotY() != -1) {
             shelfSystem.setPotX(game.getPotX());
@@ -56,14 +59,14 @@ public class GameScreen implements Screen {
         camera.update();
         sprite.setProjectionMatrix(camera.combined);
 
+        boolean isLeftClick = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
+        shelfSystem.update(delta, Gdx.input.getX(), Gdx.input.getY(), isLeftClick);
+        
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             // Save the pot position before switching to the menu
             game.setPotPosition(shelfSystem.getPotX(), shelfSystem.getPotY());
             game.showMenuScreen();
         }
-
-        // Update the ShelfSystem with current mouse position
-        shelfSystem.update(delta, Gdx.input.getX(), Gdx.input.getY());
 
         sprite.begin();
 
@@ -107,5 +110,7 @@ public class GameScreen implements Screen {
         bg.dispose();
         cat.getTexture().dispose();
         potTexture.dispose();
+        potTexture2.dispose();
+        snapTexture.dispose();
     }
 }
