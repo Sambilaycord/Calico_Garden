@@ -15,6 +15,8 @@ import java.text.DecimalFormat;
 
 public class GameScreen implements Screen {
 
+    public static final float SPEED = 10;
+
     private SpriteBatch sprite;
     private Texture bg;
     private Sprite cat;
@@ -26,6 +28,7 @@ public class GameScreen implements Screen {
     private Texture snapTexture;
     private BitmapFont font;
     private float timer = 0;
+    private int day = 1; // Add a day variable
     private DecimalFormat decimalFormat;
 
     public GameScreen(CalicoGarden game) {
@@ -69,7 +72,6 @@ public class GameScreen implements Screen {
         camera.update();
         sprite.setProjectionMatrix(camera.combined);
 
-
         // Handle input
         handleInput();
 
@@ -93,16 +95,24 @@ public class GameScreen implements Screen {
         sprite.end();
 
         // Update the game timer
-        timer += delta;
-        plantGrowthSystem.update(delta);
+        timer += delta * 360; // 360 in-game seconds per real second
+        int inGameSeconds = (int) timer;
+
+        // Check if a day has passed
+        if (inGameSeconds >= 86400) { // 86400 in-game seconds in 24 hours
+            day++;
+            timer -= 86400; // Reset the timer, keep the excess time
+            inGameSeconds = (int) timer;
+        }
+
+        // Format the timer to display in 24-hour format
+        int hours = (inGameSeconds / 3600) % 24;
+        int minutes = (inGameSeconds % 3600) / 60;
+        String formattedTime = decimalFormat.format(hours) + ":" + decimalFormat.format(minutes);
 
         sprite.begin();
-        // Format the timer to display in 24-hour format
-        int hours = (int) (timer / 3600);
-        int minutes = (int) ((timer % 3600) / 60);
-        String formattedTime = decimalFormat.format(hours) + ":" + decimalFormat.format(minutes);
+        font.draw(sprite, "Day: " + day, 100, 540); // Display the current day
         font.draw(sprite, "Time: " + formattedTime, 100, 500);
-
         // Draw other UI elements
         font.draw(sprite, "Plant Growth Stage: " + plantGrowthSystem.getGrowthStage(), 100, 460);
         if (plantGrowthSystem.isFullyGrown()) {
