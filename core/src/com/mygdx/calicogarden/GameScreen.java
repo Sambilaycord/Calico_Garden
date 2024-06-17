@@ -57,7 +57,7 @@ public class GameScreen implements Screen {
                 {625f, 650f, 1050f} // Y: 625, Left X: 200, Right X: screen width / 2
         };
 
-        shelfSystem = new ShelfSystem(potTexture, snapTexture, lockPositions);
+        shelfSystem = new ShelfSystem(potTexture, potTexture2, snapTexture, lockPositions);
         plantGrowthSystem = new PlantGrowthSystem();
 
         
@@ -91,7 +91,7 @@ public class GameScreen implements Screen {
         handleInput();
 
         // Update and draw other game components
-        shelfSystem.update(delta, Gdx.input.getX(), Gdx.input.getY());
+        shelfSystem.update(delta, Gdx.input.getX(), Gdx.input.getY(), isLeftClick);
 
         sprite.begin();
         sprite.draw(bg, 0, 0);
