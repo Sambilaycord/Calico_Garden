@@ -73,14 +73,14 @@ public class ShelfSystem {
 
     private boolean isDragging(float mouseX, float mouseY) {
         return Gdx.input.isButtonPressed(Input.Buttons.LEFT) &&
-               mouseX >= potX && mouseX <= potX + potTexture.getWidth() &&
-               mouseY >= potY && mouseY <= potY + potTexture.getHeight();
+                mouseX >= potX && mouseX <= potX + potTexture.getWidth() &&
+                mouseY >= potY && mouseY <= potY + potTexture.getHeight();
     }
 
     public boolean isPotClicked(float clickX, float clickY) {
         boolean clicked = Gdx.input.isButtonPressed(Input.Buttons.LEFT) &&
-               clickX >= potX && clickX <= potX + potTexture.getWidth() &&
-               clickY >= potY && clickY <= potY + potTexture.getHeight();
+                clickX >= potX && clickX <= potX + potTexture.getWidth() &&
+                clickY >= potY && clickY <= potY + potTexture.getHeight();
         Gdx.app.log("ShelfSystem", "isPotClicked - clicked: " + clicked);
         return clicked;
     }
