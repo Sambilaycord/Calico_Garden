@@ -5,6 +5,8 @@ public class PlantGrowthSystem {
     private boolean isWatered;
     private int growthStage;
     private float elapsedTime;
+    private final float hourDuration;
+    private final float dayDuration;
     private final int totalGrowthStages;
     private final int basePrice; // Base price of the plant
 
@@ -12,12 +14,23 @@ public class PlantGrowthSystem {
         this.isWatered = false;
         this.growthStage = 0;
         this.elapsedTime = 0;
+        this.hourDuration = 10; // 1 hour in game time (10 seconds real time)
+        this.dayDuration = 24 * hourDuration; // 24 hours in game time
         this.totalGrowthStages = 4; // Define total growth stages
         this.basePrice = 10; // Example base price (can be adjusted)
     }
 
     public void update(float delta) {
         elapsedTime += delta;
+
+        if (isWatered && elapsedTime >= dayDuration / totalGrowthStages) {
+            growthStage = Math.min(growthStage + 1, totalGrowthStages);
+            elapsedTime = 0;
+        }
+
+        if (elapsedTime >= dayDuration) {
+            resetGrowth();
+        }
     }
 
     public void waterPlant() {

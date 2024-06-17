@@ -60,51 +60,56 @@ public class ShopScreen implements Screen {
 
         // Initialize ShelfSystem with plants array
         shelfSystem = new ShelfSystem(plants);
+
+        shelfSystem.loadState();
     }
 
     @Override
-    public void render(float delta) {
-        ScreenUtils.clear(0, 0, 0, 1);
+public void render(float delta) {
+    ScreenUtils.clear(0, 0, 0, 1);
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
-            game.showGameScreen();
-        }
+    if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+        game.showGameScreen();
+    }
 
-        // Check if cursor is over the button
-        Vector3 cursorPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-        camera.unproject(cursorPos);
-        isHovered = buttonBounds.contains(cursorPos.x, cursorPos.y);
+    // Check if cursor is over the button
+    Vector3 cursorPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+    camera.unproject(cursorPos);
+    isHovered = buttonBounds.contains(cursorPos.x, cursorPos.y);
 
-        if (Gdx.input.justTouched()) {
-            for (int i = 0; i < plants.length; i++) {
-                if (plantBounds[i].contains(cursorPos.x, cursorPos.y)) {
-                    if (game.getCoins() >= plants[i].getPrice()) {
-                        game.setCoins(game.getCoins() - plants[i].getPrice());
-                        game.addPlantToGameScreen(plants[i]);
-                        System.out.println(plants[i].getName() + " bought! Remaining coins: " + game.getCoins());
-                        return; // Exit render to prevent further drawing this frame
-                    } else {
-                        System.out.println("Not enough coins for " + plants[i].getName() + "!");
-                    }
+    if (Gdx.input.justTouched()) {
+        for (int i = 0; i < plants.length; i++) {
+            if (plantBounds[i].contains(cursorPos.x, cursorPos.y)) {
+                if (game.getCoins() >= plants[i].getPrice()) {
+                    game.setCoins(game.getCoins() - plants[i].getPrice());
+                    game.addPlantToGameScreen(plants[i]);
+                    System.out.println(plants[i].getName() + " bought! Remaining coins: " + game.getCoins());
+                    return; // Exit render to prevent further drawing this frame
+                } else {
+                    System.out.println("Not enough coins for " + plants[i].getName() + "!");
                 }
             }
         }
-
-        sprite.begin();
-        sprite.draw(bg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        font.draw(sprite, "Coins: " + game.getCoins(), 20, 40);
-
-        if (isHovered) {
-            sprite.draw(buttonTextureHover, buttonBounds.x, buttonBounds.y, buttonBounds.width, buttonBounds.height);
-        } else {
-            sprite.draw(buttonTexture, buttonBounds.x, buttonBounds.y, buttonBounds.width, buttonBounds.height);
-        }
-
-        // Draw plants
-        shelfSystem.draw(sprite);
-
-        sprite.end();
     }
+
+    sprite.begin();
+    sprite.draw(bg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+    font.draw(sprite, "Coins: " + game.getCoins(), 20, 40);
+
+    if (isHovered) {
+        sprite.draw(buttonTextureHover, buttonBounds.x, buttonBounds.y, buttonBounds.width, buttonBounds.height);
+    } else {
+        sprite.draw(buttonTexture, buttonBounds.x, buttonBounds.y, buttonBounds.width, buttonBounds.height);
+    }
+
+    // Draw plants
+    for (int i = 0; i < plants.length; i++) {
+        sprite.draw(plants[i].getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width, plantBounds[i].height);
+    }
+
+    sprite.end();
+}
+
 
     @Override
     public void resize(int width, int height) {

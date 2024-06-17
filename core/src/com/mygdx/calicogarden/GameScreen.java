@@ -83,14 +83,28 @@ public void show() {
 }
 
 
-    @Override
+@Override
 public void render(float delta) {
     ScreenUtils.clear(1, 0, 0, 1);
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-    shelfSystem.update(delta, Gdx.input.getX(), Gdx.input.getY(), Gdx.input.isButtonPressed(Input.Buttons.LEFT), camera);
+
+    // Get touch input for dragging and resizing
+    int x = Gdx.input.getX(0);
+    int y = Gdx.input.getY(0);
+    boolean isTouched = Gdx.input.isTouched(0);
+
+    int secondX = Gdx.input.isTouched(1) ? Gdx.input.getX(1) : x;
+    int secondY = Gdx.input.isTouched(1) ? Gdx.input.getY(1) : y;
+    boolean isSecondTouch = Gdx.input.isTouched(1);
+
+    // Update the shelf system with the touch input
+    shelfSystem.update(delta, x, y, isTouched, isSecondTouch, secondX, secondY, camera);
+
+    // Update UI elements
     shopLogo.setPosition(0, 600);
     accessoryLogo.setPosition(0, 450);
 
+    // Update the in-game timer
     timer += delta * 480; // 480 in-game seconds per real second
     int inGameSeconds = (int) timer;
 
@@ -102,28 +116,40 @@ public void render(float delta) {
 
     int hours = (inGameSeconds / 3600) % 24;
     int minutes = (inGameSeconds % 3600) / 60;
-
     String formattedTime = decimalFormat.format(hours) + ":" + decimalFormat.format(minutes);
+
+    // Handle input
     handleInput();
 
-    // Display the timer and related information
+    // Begin sprite batch
     sprite.begin();
+
+    // Draw background
     sprite.draw(bg, 0, 0);
+
+    // Draw cat and logos
     cat.setPosition(-110, -110);
     cat.draw(sprite);
     shopLogo.draw(sprite);
     accessoryLogo.draw(sprite);
+
+    // Draw the shelf system (plants)
     shelfSystem.draw(sprite);
 
+    // Draw additional plants from the game
     for (int i = 0; i < game.getPlants().size(); i++) {
         Plant plant = game.getPlants().get(i);
         sprite.draw(plant.getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width, plantBounds[i].height);
     }
 
+    // Call accessory method (if it handles additional drawing)
     accessory();
-    camera.update();
 
+    // Update camera
+    camera.update();
     sprite.setProjectionMatrix(camera.combined);
+
+    // Draw HUD (timer, day, plant growth information)
     font.draw(sprite, "Time: " + formattedTime, 100, 760);
     font.draw(sprite, "Day: " + day, 100, 740);
     font.draw(sprite, "Plant Growth Stage: " + plantGrowthSystem.getGrowthStage(), 100, 720);
@@ -131,8 +157,10 @@ public void render(float delta) {
         font.draw(sprite, "Plant is fully grown!", 100, 420);
     }
 
+    // End sprite batch
     sprite.end();
 }
+
 
     private void handleInput() {
         if (Gdx.input.isTouched()) {
@@ -194,7 +222,7 @@ public void render(float delta) {
 
     @Override
     public void hide() {
-        // Not implemented
+        shelfSystem.saveState();
     }
 
     @Override
