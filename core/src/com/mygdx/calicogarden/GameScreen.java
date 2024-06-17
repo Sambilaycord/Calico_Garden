@@ -2,6 +2,7 @@ package com.mygdx.calicogarden;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -19,9 +20,6 @@ import com.badlogic.gdx.audio.Sound;
 import java.text.DecimalFormat;
 
 public class GameScreen implements Screen {
-
-    public static final float SPEED = 10;
-
     private SpriteBatch sprite;
     private Texture bg;
     private Sprite cat;
@@ -39,6 +37,8 @@ public class GameScreen implements Screen {
     private DecimalFormat decimalFormat;
     private Rectangle accessoryLogoBounds;
     private Rectangle shopLogoBounds;
+    private Preferences prefs;
+
 
     public GameScreen(CalicoGarden game) {
         this.game = game;
@@ -46,6 +46,8 @@ public class GameScreen implements Screen {
         font = new BitmapFont();
         timer = 0;
         decimalFormat = new DecimalFormat("00"); // Format for two-digit numbers
+
+        prefs = Gdx.app.getPreferences("CalicoGardenGameData");
     }
 
     @Override
@@ -57,6 +59,10 @@ public class GameScreen implements Screen {
         shopLogo = new Sprite(new Texture("shop_icon.png"));
         potTexture = new Texture("Pots/pot.png");
         snapTexture = new Texture("Pots/potSnap.png");
+
+        day = prefs.getInteger("day", 1);
+        timer = prefs.getInteger("timeInSeconds", 0);
+
 
         accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
         shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
@@ -82,7 +88,7 @@ public class GameScreen implements Screen {
         shopLogo.setPosition(0, 600);
         accessoryLogo.setPosition(0, 450);
 
-        timer += delta * 360; // 360 in-game seconds per real second
+        timer += delta * 480; // 480 in-game seconds per real second
         int inGameSeconds = (int) timer;
 
         if (inGameSeconds >= 86400) { // 86400 in-game seconds in 24 hours
@@ -93,9 +99,11 @@ public class GameScreen implements Screen {
 
         int hours = (inGameSeconds / 3600) % 24;
         int minutes = (inGameSeconds % 3600) / 60;
+
         String formattedTime = decimalFormat.format(hours) + ":" + decimalFormat.format(minutes);
         handleInput();
 
+        // Display the timer and related information
         sprite.begin();
         sprite.draw(bg, 0, 0);
         cat.setPosition(-110,-110);
@@ -108,16 +116,17 @@ public class GameScreen implements Screen {
         camera.update();
 
         sprite.setProjectionMatrix(camera.combined);
-        font.draw(sprite, "Day: " + day, 100, 540); // Display the current day
-        font.draw(sprite, "Time: " + formattedTime, 100, 500);
-        // Draw other UI elements
-        font.draw(sprite, "Plant Growth Stage: " + plantGrowthSystem.getGrowthStage(), 100, 460);
+        font.draw(sprite, "Time: " + formattedTime, 100, 760);
+        font.draw(sprite, "Day: " + day, 100, 740);
+        font.draw(sprite, "Plant Growth Stage: " + plantGrowthSystem.getGrowthStage(), 100, 720);
         if (plantGrowthSystem.isFullyGrown()) {
             font.draw(sprite, "Plant is fully grown!", 100, 420);
         }
 
         sprite.end();
     }
+
+
 
     private void handleInput() {
         if (Gdx.input.isTouched()) {
@@ -167,7 +176,9 @@ public class GameScreen implements Screen {
 
     @Override
     public void pause() {
-        // Not implemented
+        prefs.putInteger("day", day);
+        prefs.putInteger("timeInSeconds", (int) timer);
+        prefs.flush();
     }
 
     @Override
