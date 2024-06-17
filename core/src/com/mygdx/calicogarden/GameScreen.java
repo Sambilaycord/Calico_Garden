@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.audio.Music;
 
 import java.text.DecimalFormat;
@@ -76,6 +77,8 @@ public void show() {
 
     shelfSystem = new ShelfSystem(game.getPlants().toArray(new Plant[0]));
     plantGrowthSystem = new PlantGrowthSystem();
+
+    font.setColor(Color.ORANGE);
 
     game.music();
 }
@@ -151,9 +154,10 @@ public void render(float delta) {
     camera.update();
     sprite.setProjectionMatrix(camera.combined);
 
-    // Draw HUD (timer, day, plant growth information)
-    font.draw(sprite, "Time: " + formattedTime, 100, 760);
-    font.draw(sprite, "Day: " + day, 100, 740);
+    font.draw(sprite, "Coins: " + game.getCoins(), 200, 730);
+
+    font.draw(sprite, "Time: " + formattedTime, 200, 780);
+    font.draw(sprite, "Day: " + day, 400, 780);
     if (plantGrowthSystem.isFullyGrown()) {
         font.draw(sprite, "Plant is fully grown!", 100, 420);
     }
@@ -221,6 +225,7 @@ public void render(float delta) {
     public void resize(int width, int height) {
         camera.setToOrtho(false, width, height);
         cat.setSize(Gdx.graphics.getWidth() / 2.5f, Gdx.graphics.getHeight() / 1.4f);
+        font.getData().setScale(2.0f, 2.0f);
     }
 
     @Override
