@@ -25,7 +25,6 @@ public class GameScreen implements Screen {
     private ShelfSystem shelfSystem;
     private PlantGrowthSystem plantGrowthSystem;
     private Texture potTexture;
-    private Texture snapTexture;
     private BitmapFont font;
     private float timer = 0;
     private int day = 1; // Add a day variable
@@ -48,7 +47,6 @@ public class GameScreen implements Screen {
 
         potTexture = new Texture("Pots/pot.png");
         potTexture2 = new Texture("Pots/pot2.png");
-        snapTexture = new Texture("Pots/potSnap.png");
 
         float[][] lockPositions = {
                 {50f, 450f, 880f}, // Y: 50, Left X: 100, Right X: 300
@@ -57,15 +55,8 @@ public class GameScreen implements Screen {
                 {625f, 650f, 1050f} // Y: 625, Left X: 200, Right X: screen width / 2
         };
 
-        shelfSystem = new ShelfSystem(potTexture, potTexture2, snapTexture, lockPositions);
+        shelfSystem = new ShelfSystem(potTexture, potTexture2, lockPositions);
         plantGrowthSystem = new PlantGrowthSystem();
-
-        
-        // Set the pot position if it has been saved previously
-        if (game.getPotX() != -1 && game.getPotY() != -1) {
-            shelfSystem.setPotX(game.getPotX());
-            shelfSystem.setPotY(game.getPotY());
-        }
     }
 
     @Override
@@ -80,16 +71,11 @@ public class GameScreen implements Screen {
         shelfSystem.update(delta, Gdx.input.getX(), Gdx.input.getY(), isLeftClick);
         
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
-            // Save the pot position before switching to the menu
-            game.setPotPosition(shelfSystem.getPotX(), shelfSystem.getPotY());
             game.showMenuScreen();
         }
 
         // Handle input
         handleInput();
-
-        // Update and draw other game components
-        shelfSystem.update(delta, Gdx.input.getX(), Gdx.input.getY(), isLeftClick);
 
         sprite.begin();
         sprite.draw(bg, 0, 0);
@@ -135,11 +121,6 @@ public class GameScreen implements Screen {
     }
 
     private void handleInput() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
-            game.setPotPosition(shelfSystem.getPotX(), shelfSystem.getPotY());
-            game.showMenuScreen();
-        }
-
         if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
             plantGrowthSystem.waterPlant();
         }
@@ -175,7 +156,6 @@ public class GameScreen implements Screen {
         bg.dispose();
         cat.getTexture().dispose();
         potTexture.dispose();
-        snapTexture.dispose();
         font.dispose();
         potTexture2.dispose();
     }
