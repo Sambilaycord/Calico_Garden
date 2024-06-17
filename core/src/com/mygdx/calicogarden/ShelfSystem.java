@@ -2,6 +2,7 @@ package com.mygdx.calicogarden;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
@@ -21,15 +22,24 @@ public class ShelfSystem {
     private boolean draggingPot1; // Flag to track if pot1 is being dragged
     private boolean draggingPot2; // Flag to track if pot2 is being dragged
 
+    private Preferences preferences;
+
     public ShelfSystem(Texture potTexture, Texture anotherPotTexture, float[][] lockPositions) {
         this.potTexture = potTexture;
         this.potTexture2 = anotherPotTexture;
         this.lockPositions = lockPositions;
-        this.currentLockIndex1 = 0;
-        this.currentLockIndex2 = 0;
-        
-        this.potBounds1 = new Rectangle((Gdx.graphics.getWidth() - potTexture.getWidth()), lockPositions[currentLockIndex1][0], 150, 100);
-        this.potBounds2 = new Rectangle((Gdx.graphics.getWidth() - potTexture2.getWidth()), lockPositions[currentLockIndex2][0], 150, 100);
+        this.preferences = Gdx.app.getPreferences("PotPositions");
+
+        this.currentLockIndex1 = preferences.getInteger("pot1LockIndex", 0);
+        this.currentLockIndex2 = preferences.getInteger("pot2LockIndex", 0);
+
+        float pot1X = preferences.getFloat("pot1X", (Gdx.graphics.getWidth() - potTexture.getWidth()));
+        float pot1Y = preferences.getFloat("pot1Y", lockPositions[currentLockIndex1][0]);
+        float pot2X = preferences.getFloat("pot2X", (Gdx.graphics.getWidth() - potTexture2.getWidth()));
+        float pot2Y = preferences.getFloat("pot2Y", lockPositions[currentLockIndex2][0]);
+
+        this.potBounds1 = new Rectangle(pot1X, pot1Y, 150, 100);
+        this.potBounds2 = new Rectangle(pot2X, pot2Y, 150, 100);
     }
 
     public void update(float delta, float mouseX, float mouseY, boolean isLeftClick) {
@@ -52,9 +62,11 @@ public class ShelfSystem {
             if (draggingPot1) {
                 draggingPot1 = false;
                 snapToLockPosition(potBounds1, 1);
+                savePotPosition(1, potBounds1);
             } else if (draggingPot2) {
                 draggingPot2 = false;
                 snapToLockPosition(potBounds2, 2);
+                savePotPosition(2, potBounds2);
             }
         }
 
@@ -89,6 +101,13 @@ public class ShelfSystem {
         }
 
         return closestIndex;
+    }
+
+    private void savePotPosition(int potIndex, Rectangle potBounds) {
+        preferences.putInteger("pot" + potIndex + "LockIndex", potIndex == 1 ? currentLockIndex1 : currentLockIndex2);
+        preferences.putFloat("pot" + potIndex + "X", potBounds.x);
+        preferences.putFloat("pot" + potIndex + "Y", potBounds.y);
+        preferences.flush();
     }
 
     public void draw(SpriteBatch batch) {

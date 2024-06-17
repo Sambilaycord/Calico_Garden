@@ -156,6 +156,7 @@ public class GameScreen implements Screen {
         bg.dispose();
         cat.getTexture().dispose();
         potTexture.dispose();
+
         font.dispose();
         potTexture2.dispose();
     }
