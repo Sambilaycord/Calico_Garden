@@ -3,13 +3,19 @@ package com.mygdx.calicogarden;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import java.text.DecimalFormat;
+
 public class GameScreen implements Screen {
+
+    public static final float SPEED = 10;
 
     private SpriteBatch sprite;
     private Texture bg;
@@ -17,31 +23,43 @@ public class GameScreen implements Screen {
     private CalicoGarden game;
     private OrthographicCamera camera;
     private ShelfSystem shelfSystem;
+    private PlantGrowthSystem plantGrowthSystem;
     private Texture potTexture;
     private Texture snapTexture;
+    private BitmapFont font;
+    private float timer = 0;
+    private int day = 1; // Add a day variable
+    private DecimalFormat decimalFormat;
     private Texture potTexture2;
 
     public GameScreen(CalicoGarden game) {
         this.game = game;
         this.camera = game.getCamera();
+        font = new BitmapFont();
+        timer = 0;
+        decimalFormat = new DecimalFormat("00"); // Format for two-digit numbers
     }
 
     @Override
     public void show() {
         sprite = new SpriteBatch();
         bg = new Texture("GameScreen/GameScreenBackground.png");
-        cat = new Sprite(new Texture("Cat.png"));
+        cat = new Sprite(new Texture("ming.png"));
 
         potTexture = new Texture("Pots/pot.png");
         potTexture2 = new Texture("Pots/Pot2.png");
         snapTexture = new Texture("Pots/potSnap.png");
 
         float[][] lockPositions = {
-            {50f, 450f, 880f}, // Y: 50, Left X: 100, Right X: 300
-            {250f, 350f, 1150f}, // Y: 250, Left X: 50, Right X: 450
-            {460f, 450f, 1100f}, // Y: 460, Left X: 0, Right X: (screen width - pot width)
-            {625f, 650f, 1050f} // Y: 625, Left X: 200, Right X: screen width / 2
+                {50f, 450f, 880f}, // Y: 50, Left X: 100, Right X: 300
+                {250f, 350f, 1150f}, // Y: 250, Left X: 50, Right X: 450
+                {460f, 450f, 1100f}, // Y: 460, Left X: 0, Right X: (screen width - pot width)
+                {625f, 650f, 1050f} // Y: 625, Left X: 200, Right X: screen width / 2
         };
+
+        shelfSystem = new ShelfSystem(potTexture, snapTexture, lockPositions);
+        plantGrowthSystem = new PlantGrowthSystem();
+
         
         shelfSystem = new ShelfSystem(potTexture, potTexture2, snapTexture, lockPositions);
         
@@ -55,6 +73,7 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(1, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         camera.update();
         sprite.setProjectionMatrix(camera.combined);
@@ -68,40 +87,88 @@ public class GameScreen implements Screen {
             game.showMenuScreen();
         }
 
-        sprite.begin();
+        // Handle input
+        handleInput();
 
+        // Update and draw other game components
+        shelfSystem.update(delta, Gdx.input.getX(), Gdx.input.getY());
+
+        sprite.begin();
         sprite.draw(bg, 0, 0);
-        cat.setSize(Gdx.graphics.getWidth() / 4f, Gdx.graphics.getHeight() / 2f);
+        cat.setSize(Gdx.graphics.getWidth() / 2.5f, Gdx.graphics.getHeight() / 1.4f);
+        cat.setPosition(-110,-110);
         cat.draw(sprite);
 
         Texture accessory = game.getSelectedAccessory();
         if (accessory != null) {
-            sprite.draw(accessory, 0, 0); // Adjust position to be on top of the cat
+            Sprite accessorySprite = new Sprite(accessory);
+            accessorySprite.setSize(Gdx.graphics.getWidth() / 2.5f, Gdx.graphics.getHeight() / 1.4f);
+            accessorySprite.setPosition(-110,-110); // Adjust position to be on top of the cat
+            accessorySprite.draw(sprite);
+        }
+        shelfSystem.draw(sprite);
+        sprite.end();
+
+        // Update the game timer
+        timer += delta * 360; // 360 in-game seconds per real second
+        int inGameSeconds = (int) timer;
+
+        // Check if a day has passed
+        if (inGameSeconds >= 86400) { // 86400 in-game seconds in 24 hours
+            day++;
+            timer -= 86400; // Reset the timer, keep the excess time
+            inGameSeconds = (int) timer;
         }
 
-        shelfSystem.draw(sprite);
+        // Format the timer to display in 24-hour format
+        int hours = (inGameSeconds / 3600) % 24;
+        int minutes = (inGameSeconds % 3600) / 60;
+        String formattedTime = decimalFormat.format(hours) + ":" + decimalFormat.format(minutes);
 
+        sprite.begin();
+        font.draw(sprite, "Day: " + day, 100, 540); // Display the current day
+        font.draw(sprite, "Time: " + formattedTime, 100, 500);
+        // Draw other UI elements
+        font.draw(sprite, "Plant Growth Stage: " + plantGrowthSystem.getGrowthStage(), 100, 460);
+        if (plantGrowthSystem.isFullyGrown()) {
+            font.draw(sprite, "Plant is fully grown!", 100, 420);
+        }
         sprite.end();
+    }
+
+    private void handleInput() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+            game.setPotPosition(shelfSystem.getPotX(), shelfSystem.getPotY());
+            game.showMenuScreen();
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+            plantGrowthSystem.waterPlant();
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            game.showShopScreen();
+        }
     }
 
     @Override
     public void resize(int width, int height) {
-        // Handle resize
+        camera.setToOrtho(false, width, height);
     }
 
     @Override
     public void pause() {
-        // Handle pause
+        // Not implemented
     }
 
     @Override
     public void resume() {
-        // Handle resume
+        // Not implemented
     }
 
     @Override
     public void hide() {
-        // Handle hide
+        // Not implemented
     }
 
     @Override
@@ -110,7 +177,8 @@ public class GameScreen implements Screen {
         bg.dispose();
         cat.getTexture().dispose();
         potTexture.dispose();
-        potTexture2.dispose();
         snapTexture.dispose();
+        font.dispose();
+        potTexture2.dispose();
     }
 }
