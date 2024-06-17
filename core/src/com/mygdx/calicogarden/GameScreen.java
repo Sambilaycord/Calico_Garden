@@ -47,7 +47,7 @@ public class GameScreen implements Screen {
         cat = new Sprite(new Texture("ming.png"));
 
         potTexture = new Texture("Pots/pot.png");
-        potTexture2 = new Texture("Pots/Pot2.png");
+        potTexture2 = new Texture("Pots/pot2.png");
         snapTexture = new Texture("Pots/potSnap.png");
 
         float[][] lockPositions = {
@@ -60,8 +60,6 @@ public class GameScreen implements Screen {
         shelfSystem = new ShelfSystem(potTexture, potTexture2, snapTexture, lockPositions);
         plantGrowthSystem = new PlantGrowthSystem();
 
-        
-        shelfSystem = new ShelfSystem(potTexture, potTexture2, snapTexture, lockPositions);
         
         // Set the pot position if it has been saved previously
         if (game.getPotX() != -1 && game.getPotY() != -1) {

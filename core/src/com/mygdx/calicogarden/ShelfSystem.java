@@ -128,20 +128,7 @@ public class ShelfSystem {
         }
 
         batch.draw(potTexture, potX, potY, Gdx.graphics.getWidth() / 7f, Gdx.graphics.getHeight() / 5f);
-    }
-
-    private boolean isDragging(float mouseX, float mouseY) {
-        return Gdx.input.isButtonPressed(Input.Buttons.LEFT) &&
-                mouseX >= potX && mouseX <= potX + potTexture.getWidth() &&
-                mouseY >= potY && mouseY <= potY + potTexture.getHeight();
-    }
-
-    public boolean isPotClicked(float clickX, float clickY) {
-        boolean clicked = Gdx.input.isButtonPressed(Input.Buttons.LEFT) &&
-                clickX >= potX && clickX <= potX + potTexture.getWidth() &&
-                clickY >= potY && clickY <= potY + potTexture.getHeight();
-        Gdx.app.log("ShelfSystem", "isPotClicked - clicked: " + clicked);
-        return clicked;
+        batch.draw(potTexture2, potX2, potY2, Gdx.graphics.getWidth() / 7f, Gdx.graphics.getHeight() / 5f); // Ensure potTexture2 is drawn
     }
 
     public float getPotX() {
