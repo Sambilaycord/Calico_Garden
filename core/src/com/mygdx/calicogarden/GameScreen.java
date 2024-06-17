@@ -67,19 +67,13 @@ public class GameScreen implements Screen {
 
         shelfSystem = new ShelfSystem(potTexture, snapTexture, lockPositions);
         plantGrowthSystem = new PlantGrowthSystem();
-
-        // Set the pot position if it has been saved previously
-        if (game.getPotX() != -1 && game.getPotY() != -1) {
-            shelfSystem.setPotX(game.getPotX());
-            shelfSystem.setPotY(game.getPotY());
-        }
     }
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        shelfSystem.update(delta, Gdx.input.getX(), Gdx.input.getY());
+        shelfSystem.update(delta, Gdx.input.getX(), Gdx.input.getY(), Gdx.input.isButtonPressed(Input.Buttons.LEFT));
         shopLogo.setPosition(0, 600);
         accessoryLogo.setPosition(0, 450);
 
@@ -126,8 +120,7 @@ public class GameScreen implements Screen {
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
 
-            if(accessoryLogoBounds.contains(touchPos.x, touchPos.y)){
-                game.setPotPosition(shelfSystem.getPotX(), shelfSystem.getPotY());
+            if (accessoryLogoBounds.contains(touchPos.x, touchPos.y)) {
                 game.showAccessoryMenu();
             } else if (shopLogoBounds.contains(touchPos.x, touchPos.y)) {
                 game.showShopScreen();
@@ -135,7 +128,6 @@ public class GameScreen implements Screen {
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
-            game.setPotPosition(shelfSystem.getPotX(), shelfSystem.getPotY());
             game.showAccessoryMenu();
         }
 
@@ -148,7 +140,7 @@ public class GameScreen implements Screen {
         }
     }
 
-    public void accessory(){
+    public void accessory() {
         Texture accessory = game.getSelectedAccessory();
         if (accessory != null) {
             Sprite accessorySprite = new Sprite(accessory);
@@ -158,8 +150,8 @@ public class GameScreen implements Screen {
         }
     }
 
-    public void timer(){
-
+    public void timer() {
+        // Not implemented
     }
 
     @Override
@@ -189,7 +181,6 @@ public class GameScreen implements Screen {
         bg.dispose();
         cat.getTexture().dispose();
         potTexture.dispose();
-
         font.dispose();
     }
 }
