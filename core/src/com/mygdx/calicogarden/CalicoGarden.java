@@ -41,7 +41,7 @@ public class CalicoGarden extends Game {
         coins = 30; // Initialize coins
 
         bgm1 = Gdx.audio.newMusic(Gdx.files.internal("music/bgm3.mp3"));
-        bgm2 = Gdx.audio.newMusic(Gdx.files.internal("music/bgm.mp3"));
+        bgm2 = Gdx.audio.newMusic(Gdx.files.internal("music/bgm2.mp3"));
         bgm1.setLooping(true);
         bgm2.setLooping(true);
 

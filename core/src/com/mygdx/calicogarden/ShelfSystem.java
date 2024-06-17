@@ -80,13 +80,19 @@ public class ShelfSystem {
 
     private void snapToLockPosition(Rectangle potBounds, int potIndex) {
         int currentLockIndex = getClosestLockPosition(potBounds.y);
-        potBounds.setPosition(potBounds.x, lockPositions[currentLockIndex][0]);
+        float leftX = lockPositions[currentLockIndex][1];
+        float rightX = lockPositions[currentLockIndex][2];
+        
+        // Ensure pot stays within the left and right borders
+        potBounds.setX(Math.max(leftX, Math.min(rightX - potBounds.width, potBounds.x)));
+        potBounds.setY(lockPositions[currentLockIndex][0]);
+        
         if (potIndex == 1) {
-            currentLockIndex1 = currentLockIndex;
+          currentLockIndex1 = currentLockIndex;
         } else {
-            currentLockIndex2 = currentLockIndex;
+          currentLockIndex2 = currentLockIndex;
         }
-    }
+      }
 
     private int getClosestLockPosition(float mouseY) {
         int closestIndex = 0;

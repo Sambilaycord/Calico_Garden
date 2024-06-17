@@ -62,10 +62,10 @@ public class GameScreen implements Screen {
         shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
 
         float[][] lockPositions = {
-                {50f, 450f, 880f}, // Y: 50, Left X: 100, Right X: 300
-                {250f, 350f, 1150f}, // Y: 250, Left X: 50, Right X: 450
-                {460f, 450f, 1100f}, // Y: 460, Left X: 0, Right X: (screen width - pot width)
-                {625f, 650f, 1050f} // Y: 625, Left X: 200, Right X: screen width / 2
+                {50f, 450f, 1100f}, 
+                {250f, 350f, 1340f}, 
+                {460f, 450f, 1300f}, 
+                {625f, 650f, 1200f} 
         };
 
         shelfSystem = new ShelfSystem(potTexture, snapTexture, lockPositions);
