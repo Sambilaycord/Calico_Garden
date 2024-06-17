@@ -3,6 +3,7 @@ package com.mygdx.calicogarden;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -10,7 +11,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class ShopScreen implements Screen {
 
@@ -26,6 +26,7 @@ public class ShopScreen implements Screen {
 
     private Rectangle buttonBounds;
     private boolean isHovered = false;
+    private ShelfSystem shelfSystem;
 
     public ShopScreen(CalicoGarden game) {
         this.game = game;
@@ -55,8 +56,10 @@ public class ShopScreen implements Screen {
 
         buttonTexture = new Texture("TestButtons/RedSquareButton.png");
         buttonTextureHover = new Texture("TestButtons/GreenSquareButton.png");
-        buttonBounds = new Rectangle(150, 225, 200, 50);        // Initialize button bounds
+        buttonBounds = new Rectangle(150, 225, 200, 50); // Initialize button bounds
 
+        // Initialize ShelfSystem with plants array
+        shelfSystem = new ShelfSystem(plants);
     }
 
     @Override
@@ -98,10 +101,7 @@ public class ShopScreen implements Screen {
         }
 
         // Draw plants
-        for (int i = 0; i < plants.length; i++) {
-            sprite.draw(plants[i].getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width, plantBounds[i].height);
-            font.draw(sprite, plants[i].getName() + " - " + plants[i].getPrice() + " coins", plantBounds[i].x, plantBounds[i].y - 10);
-        }
+        shelfSystem.draw(sprite);
 
         sprite.end();
     }
@@ -135,8 +135,6 @@ public class ShopScreen implements Screen {
         buttonTexture.dispose();
         buttonTextureHover.dispose();
         font.dispose();
-        for (Plant plant : plants) {
-            plant.getTexture().dispose();
-        }
+        shelfSystem.dispose(); // Dispose shelfSystem resources
     }
 }
