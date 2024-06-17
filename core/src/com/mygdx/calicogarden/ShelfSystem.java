@@ -35,10 +35,10 @@ public class ShelfSystem implements Disposable {
 
         // Initialize lock positions array
         lockPositionsArray = new float[][] {
-            {50f, 450f, 1100f}, 
-            {250f, 350f, 1340f}, 
-            {460f, 450f, 1300f}, 
-            {625f, 650f, 1200f} 
+                {50f, 450f, 1100f},
+                {250f, 350f, 1340f},
+                {460f, 450f, 1300f},
+                {625f, 650f, 1200f}
         };
 
         // Initialize isLocked array
@@ -59,8 +59,10 @@ public class ShelfSystem implements Disposable {
         camera.unproject(cursorPos);
         camera.unproject(secondCursorPos);
 
+
         if (isTouched && isSecondTouch) {
             float distance = cursorPos.dst(secondCursorPos);
+
 
             if (!isResizing) {
                 for (int i = 0; i < plants.length; i++) {
@@ -99,6 +101,7 @@ public class ShelfSystem implements Disposable {
                 plantBounds[draggingIndex].y = closestLock[0];
                 isLocked[draggingIndex] = true;
 
+
                 isDragging = false;
                 draggingIndex = -1;
             }
@@ -109,7 +112,13 @@ public class ShelfSystem implements Disposable {
         int closestIndex = 0;
         float closestDistance = Math.abs(lockPositionsArray[0][0] - y); // Initialize with first lock
 
+
         for (int i = 1; i < lockPositionsArray.length; i++) {
+            float distance = Math.abs(lockPositionsArray[i][0] - y);
+            if (distance < closestDistance) {
+                closestIndex = i;
+                closestDistance = distance;
+            }
             float distance = Math.abs(lockPositionsArray[i][0] - y);
             if (distance < closestDistance) {
                 closestIndex = i;
@@ -117,7 +126,10 @@ public class ShelfSystem implements Disposable {
             }
         }
 
+
         return closestIndex;
+    }
+
     }
 
     public void draw(SpriteBatch batch) {
@@ -151,6 +163,10 @@ public class ShelfSystem implements Disposable {
             plantBounds[i].height = prefs.getFloat("plant_" + i + "_height", plantBounds[i].height);
             isLocked[i] = prefs.getBoolean("plant_" + i + "_isLocked", isLocked[i]);
         }
+    }
+
+    public float[][] getLockPositionsArray() {
+        return lockPositionsArray;
     }
 
     public void setPlantSize(int index, float width, float height) {

@@ -13,9 +13,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
-
 
 import java.text.DecimalFormat;
 
@@ -37,9 +36,12 @@ public class GameScreen implements Screen {
     private BitmapFont font;
     private float timer = 0;
     private int day = 1; // Add a day variable
+    private int currentDay;
     private DecimalFormat decimalFormat;
     private Rectangle accessoryLogoBounds;
     private Rectangle shopLogoBounds;
+    private Preferences prefs;
+    private Rectangle[] plantBounds;
     private Rectangle sellLogoBounds;
 
     private Array<Plant> plantsToAdd;
@@ -50,6 +52,15 @@ public class GameScreen implements Screen {
         font = new BitmapFont();
         timer = 0;
         decimalFormat = new DecimalFormat("00"); // Format for two-digit numbers
+
+        prefs = Gdx.app.getPreferences("CalicoGardenGameData");
+
+        plantBounds = new Rectangle[game.getPlants().size()];
+        for (int i = 0; i < game.getPlants().size(); i++) {
+            plantBounds[i] = new Rectangle(100 + i * 120, 300, 100, 100); // Example positions and sizes
+        }
+
+        currentDay = prefs.getInteger("day", 1);
     }
 
     @Override
@@ -62,6 +73,13 @@ public class GameScreen implements Screen {
         sellLogo = new Sprite(new Texture("sell_icon.png"));
         potTexture = new Texture("Pots/pot.png");
 
+    accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
+    shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
+
+    shelfSystem = new ShelfSystem(game.getPlants().toArray(new Plant[0]));
+    plantGrowthSystem = new PlantGrowthSystem();
+
+    font.setColor(Color.ORANGE);
 
         accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
         shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
@@ -72,13 +90,28 @@ public class GameScreen implements Screen {
         game.music();
     }
 
-    @Override
-    public void render(float delta) {
-        ScreenUtils.clear(1, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        shopLogo.setPosition(0, 600);
-        accessoryLogo.setPosition(0, 450);
-        sellLogo.setPosition(0,250);
+
+@Override
+public void render(float delta) {
+    ScreenUtils.clear(0, 0, 0, 1);
+    shelfSystem.setPlantSize(0, 100, 100);
+    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+    // Get touch input for dragging and resizing
+    int x = Gdx.input.getX(0);
+    int y = Gdx.input.getY(0);
+    boolean isTouched = Gdx.input.isTouched(0);
+
+    int secondX = Gdx.input.isTouched(1) ? Gdx.input.getX(1) : x;
+    int secondY = Gdx.input.isTouched(1) ? Gdx.input.getY(1) : y;
+    boolean isSecondTouch = Gdx.input.isTouched(1);
+
+    // Update the shelf system with the touch input
+    shelfSystem.update(delta, x, y, isTouched, isSecondTouch, secondX, secondY, camera);
+
+    // Update UI elements
+    shopLogo.setPosition(0, 600);
+    accessoryLogo.setPosition(0, 450);
 
         timer += delta * 360; // 360 in-game seconds per real second
         int inGameSeconds = (int) timer;
@@ -89,10 +122,19 @@ public class GameScreen implements Screen {
             inGameSeconds = (int) timer;
         }
 
-        int hours = (inGameSeconds / 3600) % 24;
-        int minutes = (inGameSeconds % 3600) / 60;
-        String formattedTime = decimalFormat.format(hours) + ":" + decimalFormat.format(minutes);
-        handleInput();
+    int hours = (inGameSeconds / 3600) % 24;
+    int minutes = (inGameSeconds % 3600) / 60;
+    String formattedTime = decimalFormat.format(hours) + ":" + decimalFormat.format(minutes);
+
+    //Update plant growth
+    int previousDay = currentDay;
+    currentDay = day;
+    if (currentDay > previousDay) {
+        plantGrowthSystem.newDay();
+    }
+
+    // Handle input
+    handleInput();
 
         sprite.begin();
         sprite.draw(bg, 0, 0);
@@ -105,17 +147,22 @@ public class GameScreen implements Screen {
         
         shelfSystem.draw(sprite);
 
-        accessory();
-        camera.update();
+    // Draw additional plants from the game
 
-        sprite.setProjectionMatrix(camera.combined);
-        font.draw(sprite, "Day: " + day, 100, 540); // Display the current day
-        font.draw(sprite, "Time: " + formattedTime, 100, 500);
-        // Draw other UI elements
-        font.draw(sprite, "Plant Growth Stage: " + plantGrowthSystem.getGrowthStage(), 100, 460);
-        if (plantGrowthSystem.isFullyGrown()) {
-            font.draw(sprite, "Plant is fully grown!", 100, 420);
-        }
+    // Call accessory method (if it handles additional drawing)
+    accessory();
+
+    // Update camera
+    camera.update();
+    sprite.setProjectionMatrix(camera.combined);
+
+    font.draw(sprite, "Coins: " + game.getCoins(), 200, 730);
+
+    font.draw(sprite, "Time: " + formattedTime, 200, 780);
+    font.draw(sprite, "Day: " + day, 400, 780);
+    if (plantGrowthSystem.isFullyGrown()) {
+        font.draw(sprite, "Plant is fully grown!", 100, 420);
+    }
 
         for (Plant plant : plantsToAdd) {
             sprite.draw(plant.getTexture(), 650f, 50f, plant.getWidth(), plant.getHeight());
@@ -142,12 +189,26 @@ public class GameScreen implements Screen {
             }
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
-            game.showAccessoryMenu();
+        if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+            Vector3 cursorPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(cursorPos);
+
+            for (int i = 0; i < shelfSystem.getLockPositionsArray().length; i++) {
+                float[] lockPos = shelfSystem.getLockPositionsArray()[i];
+                float lockX = lockPos[1];
+                float lockY = lockPos[0];
+                float lockWidth = lockPos[2] - lockPos[1];
+                float lockHeight = 100f; // Adjust as needed
+
+                if (cursorPos.x >= lockX && cursorPos.x <= lockX + lockWidth && cursorPos.y >= lockY && cursorPos.y <= lockY + lockHeight) {
+                    plantGrowthSystem.waterPlant();
+                    break; // Exit loop once watered
+                }
+            }
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-            plantGrowthSystem.waterPlant();
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+            game.showAccessoryMenu();
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
@@ -173,6 +234,7 @@ public class GameScreen implements Screen {
     public void resize(int width, int height) {
         camera.setToOrtho(false, width, height);
         cat.setSize(Gdx.graphics.getWidth() / 2.5f, Gdx.graphics.getHeight() / 1.4f);
+        font.getData().setScale(2.0f, 2.0f);
     }
 
   

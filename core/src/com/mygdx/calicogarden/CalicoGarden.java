@@ -27,8 +27,6 @@ public class CalicoGarden extends Game {
     private float potX = -1; // Initialize with an invalid position
     private float potY = -1;
 
-    private Sound buySFX;
-    private Sound changeSCreenSFX;
     private List<Plant> plants;
 
     private Sound sfx;
@@ -53,9 +51,6 @@ public class CalicoGarden extends Game {
         bgm2 = Gdx.audio.newMusic(Gdx.files.internal("music/bgm2.mp3"));
         bgm1.setLooping(true);
         bgm2.setLooping(true);
-
-        buySFX = Gdx.audio.newSound(Gdx.files.internal("music/buy.mp3"));
-        changeSCreenSFX = Gdx.audio.newSound(Gdx.files.internal("music/page_flip.wav"));
 
         music();
     }

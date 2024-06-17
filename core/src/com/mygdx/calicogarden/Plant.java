@@ -10,11 +10,15 @@ public class Plant {
     private String name;
     private Texture texture;
     private int price;
+    private boolean isOnShelf;
 
     public Plant(String name, Texture texture, int price) {
         this.name = name;
         this.texture = texture;
         this.price = price;
+        this.isOnShelf = false;
+    }
+
         this.width = texture.getWidth(); // Initialize width and height based on texture size
         this.height = texture.getHeight();
     }
@@ -52,31 +56,7 @@ public class Plant {
         return price;
     }
 
-    public void setPrice(int price) {
-        this.price = price;
-    }
-
-    public float getX() {
-        return x;
-    }
-
-    public void setX(float x) {
-        this.x = x;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public void setY(float y) {
-        this.y = y;
-    }
-
-    public float getWidth() {
-        return width;
-    }
-
-    public float getHeight() {
-        return height;
+    public void setOnShelf(boolean onShelf) {
+        isOnShelf = onShelf;
     }
 }

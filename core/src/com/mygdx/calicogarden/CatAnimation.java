@@ -2,6 +2,7 @@ package com.mygdx.calicogarden;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -25,8 +26,6 @@ public class CatAnimation implements Screen {
     private Array<AtlasRegion> frames;
     private Array<Float> frameDurations;
     private SpriteBatch batch;
-    private Texture splashTexture;
-    private Texture splashHoverTexture;
     private OrthographicCamera camera;
     private Viewport viewport;
     private float catX, catY; // Position variables for the cat
@@ -55,15 +54,13 @@ public class CatAnimation implements Screen {
     @Override
     public void show() {
         TextureAtlas charset = new TextureAtlas(Gdx.files.internal("CatAnimation/CatBlinking.atlas"));
-        splashTexture = new Texture("Menu/start.png");
-        splashHoverTexture = new Texture("Menu/start2.png"); // Load the hover texture
-        backgroundTexture = new Texture("Menu/backgroundMenu.jpg"); // Load your background image
+        backgroundTexture = new Texture("TitleScreen2.png"); // Load your background image
         frames = charset.findRegions("blinking");
         frameDurations = new Array<>(new Float[]{FRAME_TIME_1, FRAME_TIME_2_3, FRAME_TIME_2_3});
         
         // Initialize catX and catY now that the viewport is set up
-        catX = camera.viewportWidth / 2.6f;
-        catY = camera.viewportHeight / 6f;
+        catX = 200;
+        catY = 90;
 
         // Position and size of the splash (start button)
         splashWidth = camera.viewportWidth / 4f;
@@ -126,58 +123,21 @@ public class CatAnimation implements Screen {
 
         // Draw the background
         batch.begin();
-        drawBackground();
+        batch.draw(backgroundTexture, 0, 0);
         
         // Determine which splash texture to use based on mouse hover
-        Texture currentSplashTexture = splashTexture;
         float mouseX = Gdx.input.getX();
         float mouseY = Gdx.input.getY();
         Vector3 touchPos = new Vector3(mouseX, mouseY, 0);
         camera.unproject(touchPos);
-
-        if (touchPos.x >= splashX && touchPos.x <= splashX + splashWidth &&
-            touchPos.y >= splashY && touchPos.y <= splashY + splashHeight) {
-            currentSplashTexture = splashHoverTexture;
-        }
-
-        batch.draw(currentSplashTexture, splashX, splashY, splashWidth, splashHeight);
-        batch.draw(currentFrame, catX, catY, currentFrame.getRegionWidth() / 3f, currentFrame.getRegionHeight() / 3f);
+        batch.draw(currentFrame, catX, catY, currentFrame.getRegionWidth() / 1.5f, currentFrame.getRegionHeight() / 1.5f);
         batch.end();
 
         // Check for touch input
-        if (Gdx.input.isTouched() && !fadingOut) {
-            if (touchPos.x >= splashX && touchPos.x <= splashX + splashWidth &&
-                touchPos.y >= splashY && touchPos.y <= splashY + splashHeight) {
-                startSFX.play();
-                fadingOut = true; // Start fading out when the splash button is touched
-            }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) && !fadingOut) {
+            startSFX.play();
+            fadingOut = true;
         }
-    }
-
-    private void drawBackground() {
-        float screenWidth = viewport.getWorldWidth();
-        float screenHeight = viewport.getWorldHeight();
-        
-        // Calculate aspect ratio of the background and screen
-        float bgAspectRatio = 19f / 6f;
-        float screenAspectRatio = screenWidth / screenHeight;
-        
-        float bgWidth, bgHeight;
-
-        if (screenAspectRatio > bgAspectRatio) {
-            // Screen is wider than the background aspect ratio
-            bgWidth = screenWidth;
-            bgHeight = screenWidth / bgAspectRatio;
-        } else {
-            // Screen is taller than the background aspect ratio
-            bgHeight = screenHeight;
-            bgWidth = screenHeight * bgAspectRatio;
-        }
-
-        float bgX = (screenWidth - bgWidth) / 2;
-        float bgY = (screenHeight - bgHeight) / 2;
-
-        batch.draw(backgroundTexture, bgX, bgY, bgWidth, bgHeight);
     }
 
     @Override
@@ -200,8 +160,6 @@ public class CatAnimation implements Screen {
 
     @Override
     public void dispose() {
-        splashTexture.dispose();
-        splashHoverTexture.dispose();
         backgroundTexture.dispose();
         // Dispose of other resources as needed
     }
