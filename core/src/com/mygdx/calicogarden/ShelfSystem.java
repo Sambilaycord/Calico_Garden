@@ -2,44 +2,89 @@ package com.mygdx.calicogarden;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
 
 public class ShelfSystem {
 
     private final Texture potTexture;
-    private final Texture snapTexture;
-    private float potX;
-    private float potY;
-    private final float[][] lockPositions;
-    private int currentLockIndex;
-    private boolean dragging;
+    private final Texture potTexture2;
 
-    public ShelfSystem(Texture potTexture, Texture snapTexture, float[][] lockPositions) {
+    private Rectangle potBounds1;
+    private Rectangle potBounds2;
+
+    private final float[][] lockPositions;
+
+    private int currentLockIndex1;
+    private int currentLockIndex2;
+    private boolean draggingPot1; // Flag to track if pot1 is being dragged
+    private boolean draggingPot2; // Flag to track if pot2 is being dragged
+
+    private Preferences preferences;
+
+    public ShelfSystem(Texture potTexture, Texture anotherPotTexture, float[][] lockPositions) {
         this.potTexture = potTexture;
-        this.snapTexture = snapTexture;
+        this.potTexture2 = anotherPotTexture;
         this.lockPositions = lockPositions;
-        this.currentLockIndex = 0;
-        this.potY = lockPositions[currentLockIndex][0];
-        this.potX = (Gdx.graphics.getWidth() - potTexture.getWidth()) * 1.5f;
+        this.preferences = Gdx.app.getPreferences("PotPositions");
+
+        this.currentLockIndex1 = preferences.getInteger("pot1LockIndex", 0);
+        this.currentLockIndex2 = preferences.getInteger("pot2LockIndex", 0);
+
+        float pot1X = preferences.getFloat("pot1X", (Gdx.graphics.getWidth() - potTexture.getWidth()));
+        float pot1Y = preferences.getFloat("pot1Y", lockPositions[currentLockIndex1][0]);
+        float pot2X = preferences.getFloat("pot2X", (Gdx.graphics.getWidth() - potTexture2.getWidth()));
+        float pot2Y = preferences.getFloat("pot2Y", lockPositions[currentLockIndex2][0]);
+
+        this.potBounds1 = new Rectangle(pot1X, pot1Y, 150, 100);
+        this.potBounds2 = new Rectangle(pot2X, pot2Y, 150, 100);
     }
 
-    public void update(float delta, float mouseX, float mouseY) {
+    public void update(float delta, float mouseX, float mouseY, boolean isLeftClick) {
         float invertedMouseY = Gdx.graphics.getHeight() - mouseY;
 
-        if (isDragging(mouseX, invertedMouseY)) {
-            dragging = true;
+        if (isLeftClick) {
+            if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                if (potBounds1.contains(mouseX, invertedMouseY)) {
+                    draggingPot1 = true;
+                    draggingPot2 = false;
+                } else if (potBounds2.contains(mouseX, invertedMouseY)) {
+                    draggingPot1 = false;
+                    draggingPot2 = true;
+                }
+            }
         }
 
-        if (dragging) {
-            potX = Math.max(Math.min(mouseX - potTexture.getWidth() / 6f, lockPositions[currentLockIndex][2]), lockPositions[currentLockIndex][1]);
-            potY = lockPositions[currentLockIndex][0];
+        // Release the pot and snap it to the nearest lock position
+        if (!Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+            if (draggingPot1) {
+                draggingPot1 = false;
+                snapToLockPosition(potBounds1, 1);
+                savePotPosition(1, potBounds1);
+            } else if (draggingPot2) {
+                draggingPot2 = false;
+                snapToLockPosition(potBounds2, 2);
+                savePotPosition(2, potBounds2);
+            }
         }
 
-        if (!Gdx.input.isButtonPressed(Input.Buttons.LEFT) && dragging) {
-            dragging = false;
-            currentLockIndex = getClosestLockPosition(invertedMouseY);
-            potY = lockPositions[currentLockIndex][0];
+        // Update the original pot's position if it's being dragged
+        if (draggingPot1) {
+            potBounds1.setPosition(mouseX - potBounds1.width / 2f, invertedMouseY - potBounds1.height / 2f);
+        } else if (draggingPot2) {
+            potBounds2.setPosition(mouseX - potBounds2.width / 2f, invertedMouseY - potBounds2.height / 2f);
+        }
+    }
+
+    private void snapToLockPosition(Rectangle potBounds, int potIndex) {
+        int currentLockIndex = getClosestLockPosition(potBounds.y);
+        potBounds.setPosition(potBounds.x, lockPositions[currentLockIndex][0]);
+        if (potIndex == 1) {
+            currentLockIndex1 = currentLockIndex;
+        } else {
+            currentLockIndex2 = currentLockIndex;
         }
     }
 
@@ -58,46 +103,15 @@ public class ShelfSystem {
         return closestIndex;
     }
 
+    private void savePotPosition(int potIndex, Rectangle potBounds) {
+        preferences.putInteger("pot" + potIndex + "LockIndex", potIndex == 1 ? currentLockIndex1 : currentLockIndex2);
+        preferences.putFloat("pot" + potIndex + "X", potBounds.x);
+        preferences.putFloat("pot" + potIndex + "Y", potBounds.y);
+        preferences.flush();
+    }
+
     public void draw(SpriteBatch batch) {
-        if (dragging) {
-            float invertedMouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
-            int closestLockIndex = getClosestLockPosition(invertedMouseY);
-            float snapY = lockPositions[closestLockIndex][0];
-            float snapX = potX - (Gdx.graphics.getWidth() / 7f - potTexture.getWidth()) / 30f / 30f;
-
-            batch.draw(snapTexture, snapX, snapY, Gdx.graphics.getWidth() / 7f, Gdx.graphics.getHeight() / 5f);
-        }
-
-        batch.draw(potTexture, potX, potY, Gdx.graphics.getWidth() / 7f, Gdx.graphics.getHeight() / 5f);
-    }
-
-    private boolean isDragging(float mouseX, float mouseY) {
-        return Gdx.input.isButtonPressed(Input.Buttons.LEFT) &&
-                mouseX >= potX && mouseX <= potX + potTexture.getWidth() &&
-                mouseY >= potY && mouseY <= potY + potTexture.getHeight();
-    }
-
-    public boolean isPotClicked(float clickX, float clickY) {
-        boolean clicked = Gdx.input.isButtonPressed(Input.Buttons.LEFT) &&
-                clickX >= potX && clickX <= potX + potTexture.getWidth() &&
-                clickY >= potY && clickY <= potY + potTexture.getHeight();
-        Gdx.app.log("ShelfSystem", "isPotClicked - clicked: " + clicked);
-        return clicked;
-    }
-
-    public float getPotX() {
-        return potX;
-    }
-
-    public void setPotX(float potX) {
-        this.potX = potX;
-    }
-
-    public float getPotY() {
-        return potY;
-    }
-
-    public void setPotY(float potY) {
-        this.potY = potY;
+        batch.draw(potTexture, potBounds1.x, potBounds1.y, Gdx.graphics.getWidth() / 7f, Gdx.graphics.getHeight() / 5f);
+        batch.draw(potTexture2, potBounds2.x, potBounds2.y, Gdx.graphics.getWidth() / 7f, Gdx.graphics.getHeight() / 5f);
     }
 }
