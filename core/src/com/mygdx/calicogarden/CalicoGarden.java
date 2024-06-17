@@ -47,6 +47,10 @@ public class CalicoGarden extends Game {
         return coins;
     }
 
+	public void setCoins(int coins) {
+        this.coins = coins;
+    }
+
 	public void showGameScreen() {
         setScreen(gameScreen);
     }
