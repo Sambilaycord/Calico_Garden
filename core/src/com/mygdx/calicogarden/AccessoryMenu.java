@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -14,6 +15,7 @@ public class AccessoryMenu implements Screen {
     private CalicoGarden game;
     private SpriteBatch sprite;
     private OrthographicCamera camera;
+    private ShelfSystem shelfSystem;
 
     private Texture bg;
     private Texture accessory1;
@@ -44,6 +46,12 @@ public class AccessoryMenu implements Screen {
     private boolean accessory5Bol = false;
     private boolean accessory6Bol = false;
 
+    private Sprite shopLogo;
+    private Sprite accessoryLogo;
+
+    private Rectangle accessoryLogoBounds;
+    private Rectangle shopLogoBounds;
+
     private int money = 100000;
 
 
@@ -70,6 +78,12 @@ public class AccessoryMenu implements Screen {
         catAccessory5 = new Texture("cat_accessory5.png");
         catAccessory6 = new Texture("cat_accessory6.png");
 
+        accessoryLogo = new Sprite(new Texture("accessory_icon.png"));
+        shopLogo = new Sprite(new Texture("shop_icon.png"));
+
+        accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
+        shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
+
         float accessory2X = accessory1.getWidth();
         float accessory3X = accessory2X + accessory1.getWidth();
         float accessory5X = accessory4.getWidth();
@@ -88,15 +102,27 @@ public class AccessoryMenu implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
+        shopLogo.setPosition(0, 600);
+        accessoryLogo.setPosition(0, 450);
 
         camera.update();
         sprite.setProjectionMatrix(camera.combined);
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
-            game.showGameScreen();
-        }
-        
+        sprite.begin();
+        handleInput();
+        sprite.draw(bg, 0, 0);
+        sprite.draw(accessory1, accessoryBounds1.x, accessoryBounds1.y);
+        sprite.draw(accessory2, accessoryBounds2.x, accessoryBounds2.y);
+        sprite.draw(accessory3, accessoryBounds3.x, accessoryBounds3.y);
+        sprite.draw(accessory4, accessoryBounds4.x, accessoryBounds4.y);
+        sprite.draw(accessory5, accessoryBounds5.x, accessoryBounds5.y);
+        sprite.draw(accessory6, accessoryBounds6.x, accessoryBounds6.y);
+        shopLogo.draw(sprite);
+        accessoryLogo.draw(sprite);
+        sprite.end();
+    }
 
+    private void handleInput() {
         if (Gdx.input.isTouched()) {
             Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
@@ -142,23 +168,20 @@ public class AccessoryMenu implements Screen {
                 game.setSelectedAccessory(catAccessory6);
                 game.showGameScreen();
             }
-        }
 
-        sprite.begin();
-        sprite.draw(bg, 0, 0);
-        sprite.draw(accessory1, accessoryBounds1.x, accessoryBounds1.y);
-        sprite.draw(accessory2, accessoryBounds2.x, accessoryBounds2.y);
-        sprite.draw(accessory3, accessoryBounds3.x, accessoryBounds3.y);
-        sprite.draw(accessory4, accessoryBounds4.x, accessoryBounds4.y);
-        sprite.draw(accessory5, accessoryBounds5.x, accessoryBounds5.y);
-        sprite.draw(accessory6, accessoryBounds6.x, accessoryBounds6.y);
-        sprite.end();
+            if(accessoryLogoBounds.contains(touchPos.x, touchPos.y)){
+                game.showGameScreen();
+            } else if (shopLogoBounds.contains(touchPos.x, touchPos.y)) {
+                game.showShopScreen();
+            }
+        }
     }
 
     @Override
     public void resize(int width, int height) {
         // Handle resize
     }
+
 
     @Override
     public void pause() {
@@ -181,5 +204,11 @@ public class AccessoryMenu implements Screen {
         bg.dispose();
         accessory1.dispose();
         accessory2.dispose();
+        accessory3.dispose();
+        accessory4.dispose();
+        accessory5.dispose();
+        accessory6.dispose();
+        accessoryLogo.getTexture().dispose();
+        shopLogo.getTexture().dispose();
     }
 }

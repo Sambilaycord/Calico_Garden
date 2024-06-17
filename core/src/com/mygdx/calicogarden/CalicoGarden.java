@@ -62,7 +62,7 @@ public class CalicoGarden extends Game {
         setScreen(shopScreen);
     }
 
-    public void showMenuScreen() {
+    public void showAccessoryMenu() {
         setScreen(accessoryMenu);
     }
 
