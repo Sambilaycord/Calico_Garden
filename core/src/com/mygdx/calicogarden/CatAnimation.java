@@ -2,6 +2,7 @@ package com.mygdx.calicogarden;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -37,6 +38,8 @@ public class CatAnimation implements Screen {
     private boolean fadingOut;
     private float fadeTimer;
 
+    private Sound startSFX;
+
     public CatAnimation(SpriteBatch batch, CalicoGarden game) {
         this.batch = batch;
         this.game = game;
@@ -67,6 +70,8 @@ public class CatAnimation implements Screen {
         splashHeight = camera.viewportHeight / 15f;
         splashX = (camera.viewportWidth - splashWidth) / 2.2f;
         splashY = camera.viewportHeight / 1.5f;
+
+        startSFX = Gdx.audio.newSound(Gdx.files.internal("music/starting.ogg"));
     }
 
     @Override
@@ -143,6 +148,7 @@ public class CatAnimation implements Screen {
         if (Gdx.input.isTouched() && !fadingOut) {
             if (touchPos.x >= splashX && touchPos.x <= splashX + splashWidth &&
                 touchPos.y >= splashY && touchPos.y <= splashY + splashHeight) {
+                startSFX.play();
                 fadingOut = true; // Start fading out when the splash button is touched
             }
         }

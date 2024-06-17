@@ -3,6 +3,7 @@ package com.mygdx.calicogarden;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -28,11 +29,10 @@ public class ShopScreen implements Screen {
     private Rectangle buttonBounds;
     private boolean isHovered = false;
 
-    private Sprite shopLogo;
-    private Sprite accessoryLogo;
+    private Sprite exitButton;
+    private Rectangle exitButtonBounds;
 
-    private Rectangle accessoryLogoBounds;
-    private Rectangle shopLogoBounds;
+    private Sound buySFX;
 
     public ShopScreen(CalicoGarden game) {
         this.game = game;
@@ -43,15 +43,13 @@ public class ShopScreen implements Screen {
     @Override
     public void show() {
         sprite = new SpriteBatch();
+        buySFX = Gdx.audio.newSound(Gdx.files.internal("music/buy.mp3"));
         bg = new Texture("shop.png");
         buttonTexture = new Texture("TestButtons/RedSquareButton.png");
         buttonTextureHover = new Texture("TestButtons/GreenSquareButton.png");
 
-        accessoryLogo = new Sprite(new Texture("accessory_icon.png"));
-        shopLogo = new Sprite(new Texture("shop_icon.png"));
-
-        accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
-        shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
+        exitButton = new Sprite(new Texture("exit.png"));
+        exitButtonBounds = new Rectangle(1200, 0, exitButton.getWidth(), exitButton.getHeight());
 
         // Initialize button bounds
         buttonBounds = new Rectangle(150, 225, 200, 50);
@@ -60,8 +58,6 @@ public class ShopScreen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
-        shopLogo.setPosition(0, 600);
-        accessoryLogo.setPosition(0, 450);
         handleInput();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
@@ -86,8 +82,7 @@ public class ShopScreen implements Screen {
         sprite.begin();
         sprite.draw(bg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         font.draw(sprite, "Coins: " + game.getCoins(), 20, 40);
-        shopLogo.draw(sprite);
-        accessoryLogo.draw(sprite);
+        sprite.draw(exitButton, exitButtonBounds.x, exitButtonBounds.y);
 
         if (isHovered) {
             sprite.draw(buttonTextureHover, buttonBounds.x, buttonBounds.y, buttonBounds.width, buttonBounds.height);
@@ -100,13 +95,12 @@ public class ShopScreen implements Screen {
 
     private void handleInput() {
         if (Gdx.input.isTouched()) {
+            buySFX.play();
             Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
 
-            if (accessoryLogoBounds.contains(touchPos.x, touchPos.y)) {
-                game.showAccessoryMenu();
-            } else if (shopLogoBounds.contains(touchPos.x, touchPos.y)) {
+            if (exitButtonBounds.contains(touchPos.x, touchPos.y)) {
                 game.showGameScreen();
             }
         }

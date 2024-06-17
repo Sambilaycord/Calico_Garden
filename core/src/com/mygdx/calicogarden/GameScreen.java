@@ -39,6 +39,8 @@ public class GameScreen implements Screen {
     private DecimalFormat decimalFormat;
     private Rectangle accessoryLogoBounds;
     private Rectangle shopLogoBounds;
+    private Sound buySFX;
+
 
     public GameScreen(CalicoGarden game) {
         this.game = game;
@@ -57,6 +59,8 @@ public class GameScreen implements Screen {
         shopLogo = new Sprite(new Texture("shop_icon.png"));
         potTexture = new Texture("Pots/pot.png");
         snapTexture = new Texture("Pots/potSnap.png");
+
+        buySFX = Gdx.audio.newSound(Gdx.files.internal("music/buy.mp3"));
 
         accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
         shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
@@ -121,6 +125,7 @@ public class GameScreen implements Screen {
 
     private void handleInput() {
         if (Gdx.input.isTouched()) {
+            buySFX.play();
             Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);

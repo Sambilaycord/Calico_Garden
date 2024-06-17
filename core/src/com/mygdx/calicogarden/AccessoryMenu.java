@@ -3,6 +3,7 @@ package com.mygdx.calicogarden;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 
 public class AccessoryMenu implements Screen {
     private CalicoGarden game;
+    private GameScreen maingame;
     private SpriteBatch sprite;
     private OrthographicCamera camera;
     private ShelfSystem shelfSystem;
@@ -46,13 +48,20 @@ public class AccessoryMenu implements Screen {
     private boolean accessory5Bol = false;
     private boolean accessory6Bol = false;
 
-    private Sprite shopLogo;
-    private Sprite accessoryLogo;
+    private Texture buyButton;
+    private Sprite exitButton;
+    private Rectangle exitButtonBounds;
 
-    private Rectangle accessoryLogoBounds;
-    private Rectangle shopLogoBounds;
+    private Rectangle buyButtonBounds1;
+    private Rectangle buyButtonBounds2;
+    private Rectangle buyButtonBounds3;
+    private Rectangle buyButtonBounds4;
+    private Rectangle buyButtonBounds5;
+    private Rectangle buyButtonBounds6;
 
-    private int money = 100000;
+    private Sound buySFX;
+
+    private int money = 1000;
 
 
     public AccessoryMenu(CalicoGarden game) {
@@ -63,7 +72,8 @@ public class AccessoryMenu implements Screen {
     @Override
     public void show() {
         sprite = new SpriteBatch();
-        bg = new Texture("bg2.jfif");
+        buySFX = Gdx.audio.newSound(Gdx.files.internal("music/buy.mp3"));
+        bg = new Texture("accessory_bg.png");
         accessory1 = new Texture("accessory1.png");
         accessory2 = new Texture("accessory2.png");
         accessory3 = new Texture("accessory3.png");
@@ -78,32 +88,30 @@ public class AccessoryMenu implements Screen {
         catAccessory5 = new Texture("cat_accessory5.png");
         catAccessory6 = new Texture("cat_accessory6.png");
 
-        accessoryLogo = new Sprite(new Texture("accessory_icon.png"));
-        shopLogo = new Sprite(new Texture("shop_icon.png"));
+        exitButton = new Sprite(new Texture("exit.png"));
+        exitButtonBounds = new Rectangle(1200, 0, exitButton.getWidth(), exitButton.getHeight());
 
-        accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
-        shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
+        buyButton = new Texture("buy_button.png");
+        buyButtonBounds1 = new Rectangle(0, 330, buyButton.getWidth(), buyButton.getHeight());
+        buyButtonBounds2 = new Rectangle(350, 330, buyButton.getWidth(), buyButton.getHeight());
+        buyButtonBounds3 = new Rectangle(650, 330, buyButton.getWidth(), buyButton.getHeight());
+        buyButtonBounds4 = new Rectangle(950, 330, buyButton.getWidth(), buyButton.getHeight());
 
-        float accessory2X = accessory1.getWidth();
-        float accessory3X = accessory2X + accessory1.getWidth();
-        float accessory5X = accessory4.getWidth();
-        float accessory6X = accessory5X + accessory1.getWidth();
+        buyButtonBounds5 = new Rectangle(410, 0, buyButton.getWidth(), buyButton.getHeight());
+        buyButtonBounds6 = new Rectangle(820, 0, buyButton.getWidth(), buyButton.getHeight());
 
         // Initialize the bounds for each accessory
-        accessoryBounds1 = new Rectangle(0, 400, accessory1.getWidth(), accessory1.getHeight());
-        accessoryBounds2 = new Rectangle(accessory2X, 400, accessory2.getWidth(), accessory2.getHeight());
-        accessoryBounds3 = new Rectangle(accessory3X, 400, accessory3.getWidth(), accessory3.getHeight());
-
-        accessoryBounds4 = new Rectangle(0, 0, accessory4.getWidth(), accessory4.getHeight());
-        accessoryBounds5 = new Rectangle(accessory5X, 0, accessory5.getWidth(), accessory5.getHeight());
-        accessoryBounds6 = new Rectangle(accessory6X, 0, accessory6.getWidth(), accessory6.getHeight());
+        accessoryBounds1 = new Rectangle(100, 450, accessory1.getWidth(), accessory1.getHeight());
+        accessoryBounds2 = new Rectangle(400, 450, accessory2.getWidth(), accessory2.getHeight());
+        accessoryBounds3 = new Rectangle(720, 450, accessory3.getWidth(), accessory3.getHeight());
+        accessoryBounds4 = new Rectangle(1030, 450, accessory4.getWidth(), accessory4.getHeight());
+        accessoryBounds5 = new Rectangle(500, 100, accessory5.getWidth(), accessory5.getHeight());
+        accessoryBounds6 = new Rectangle(900, 100, accessory6.getWidth(), accessory6.getHeight());
     }
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
-        shopLogo.setPosition(0, 600);
-        accessoryLogo.setPosition(0, 450);
 
         camera.update();
         sprite.setProjectionMatrix(camera.combined);
@@ -117,63 +125,96 @@ public class AccessoryMenu implements Screen {
         sprite.draw(accessory4, accessoryBounds4.x, accessoryBounds4.y);
         sprite.draw(accessory5, accessoryBounds5.x, accessoryBounds5.y);
         sprite.draw(accessory6, accessoryBounds6.x, accessoryBounds6.y);
-        shopLogo.draw(sprite);
-        accessoryLogo.draw(sprite);
+
+        sprite.draw(buyButton, buyButtonBounds1.x, buyButtonBounds1.y);
+        sprite.draw(buyButton, buyButtonBounds2.x, buyButtonBounds2.y);
+        sprite.draw(buyButton, buyButtonBounds3.x, buyButtonBounds3.y);
+        sprite.draw(buyButton, buyButtonBounds4.x, buyButtonBounds4.y);
+        sprite.draw(buyButton, buyButtonBounds5.x, buyButtonBounds5.y);
+        sprite.draw(buyButton, buyButtonBounds6.x, buyButtonBounds6.y);
+
+        sprite.draw(exitButton, exitButtonBounds.x, exitButtonBounds.y);
         sprite.end();
+
+
     }
 
     private void handleInput() {
         if (Gdx.input.isTouched()) {
+            buySFX.play();
             Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
 
-            if (!accessory1Bol && money >= 100){
-                accessory1Bol = true;
-                money -= 100;
-            } else if (!accessory2Bol && money >= 200){
-                accessory2Bol = true;
-                money -= 200;
-            } else if (!accessory3Bol && money >= 300){
-                accessory3Bol = true;
-                money -= 300;
-            } else if (!accessory4Bol && money >= 400){
-                accessory4Bol = true;
-                money -= 200;
-            } else if (!accessory5Bol && money >= 500){
-                accessory5Bol = true;
-                money -= 300;
-            } else if (!accessory6Bol && money >= 600){
-                accessory6Bol = true;
-                money -= 300;
-            }
-
-            // Check if the touch is within the bounds of accessory1
-            if (accessoryBounds1.contains(touchPos.x, touchPos.y) && accessory1Bol) {
-                game.setSelectedAccessory(catAccessory1);
-                game.showGameScreen();
-            } else if (accessoryBounds2.contains(touchPos.x, touchPos.y) && accessory2Bol) {
-                game.setSelectedAccessory(catAccessory2);
-                game.showGameScreen();
-            } else if (accessoryBounds3.contains(touchPos.x, touchPos.y) && accessory3Bol) {
-                game.setSelectedAccessory(catAccessory3);
-                game.showGameScreen();
-            } else if (accessoryBounds4.contains(touchPos.x, touchPos.y) && accessory4Bol) {
-                game.setSelectedAccessory(catAccessory4);
-                game.showGameScreen();
-            } else if (accessoryBounds5.contains(touchPos.x, touchPos.y) && accessory5Bol) {
-                game.setSelectedAccessory(catAccessory5);
-                game.showGameScreen();
-            } else if (accessoryBounds6.contains(touchPos.x, touchPos.y) && accessory6Bol) {
-                game.setSelectedAccessory(catAccessory6);
+            if(exitButtonBounds.contains(touchPos.x, touchPos.y)){
                 game.showGameScreen();
             }
 
-            if(accessoryLogoBounds.contains(touchPos.x, touchPos.y)){
-                game.showGameScreen();
-            } else if (shopLogoBounds.contains(touchPos.x, touchPos.y)) {
-                game.showShopScreen();
+            if (buyButtonBounds1.contains(touchPos.x, touchPos.y)) {
+                if (!accessory1Bol && money >= 100) {
+                    accessory1Bol = true;
+                    money -= 100;
+                }
+
+                if (accessory1Bol) {
+                    game.setSelectedAccessory(catAccessory1);
+                    game.showGameScreen();
+                }
+
+            } else if (buyButtonBounds2.contains(touchPos.x, touchPos.y)) {
+                if (!accessory2Bol && money >= 100) {
+                    accessory2Bol = true;
+                    money -= 100;
+                }
+
+                if (accessory2Bol) {
+                    game.setSelectedAccessory(catAccessory2);
+                    game.showGameScreen();
+                }
+
+            } else if (buyButtonBounds3.contains(touchPos.x, touchPos.y)) {
+                if (!accessory3Bol && money >= 100) {
+                    accessory3Bol = true;
+                    money -= 100;
+                }
+
+                if (accessory3Bol) {
+                    game.setSelectedAccessory(catAccessory3);
+                    game.showGameScreen();
+                }
+            } else if (buyButtonBounds4.contains(touchPos.x, touchPos.y)) {
+                if (!accessory4Bol && money >= 100) {
+                    accessory4Bol = true;
+                    money -= 100;
+                }
+
+                if (accessory4Bol) {
+                    game.setSelectedAccessory(catAccessory4);
+                    game.showGameScreen();
+                }
+            } else if (buyButtonBounds5.contains(touchPos.x, touchPos.y)) {
+                if (!accessory5Bol && money >= 100) {
+                    accessory5Bol = true;
+                    money -= 100;
+                }
+
+                if (accessory5Bol) {
+                    game.setSelectedAccessory(catAccessory5);
+                    game.showGameScreen();
+                }
+            } else if (buyButtonBounds6.contains(touchPos.x, touchPos.y)) {
+                if (!accessory6Bol && money >= 100) {
+                    accessory6Bol = true;
+                    money -= 100;
+                }
+
+                if (accessory6Bol) {
+                    game.setSelectedAccessory(catAccessory6);
+                    game.showGameScreen();
+                }
             }
+
+
         }
     }
 
@@ -208,7 +249,5 @@ public class AccessoryMenu implements Screen {
         accessory4.dispose();
         accessory5.dispose();
         accessory6.dispose();
-        accessoryLogo.getTexture().dispose();
-        shopLogo.getTexture().dispose();
     }
 }
