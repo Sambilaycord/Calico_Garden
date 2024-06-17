@@ -38,6 +38,7 @@ public class GameScreen implements Screen {
     private Rectangle accessoryLogoBounds;
     private Rectangle shopLogoBounds;
     private Preferences prefs;
+    private Rectangle[] plantBounds;
 
 
     public GameScreen(CalicoGarden game) {
@@ -48,6 +49,11 @@ public class GameScreen implements Screen {
         decimalFormat = new DecimalFormat("00"); // Format for two-digit numbers
 
         prefs = Gdx.app.getPreferences("CalicoGardenGameData");
+
+        plantBounds = new Rectangle[game.getPlants().size()];
+        for (int i = 0; i < game.getPlants().size(); i++) {
+            plantBounds[i] = new Rectangle(100 + i * 120, 300, 100, 100); // Example positions and sizes
+        }
     }
 
     @Override
@@ -73,6 +79,11 @@ public class GameScreen implements Screen {
                 {460f, 450f, 1300f}, 
                 {625f, 650f, 1200f} 
         };
+
+        plantBounds = new Rectangle[game.getPlants().size()];
+        for (int i = 0; i < game.getPlants().size(); i++) {
+            plantBounds[i] = new Rectangle(100 + i * 120, 300, 100, 100); // Example positions and sizes
+        }
 
         shelfSystem = new ShelfSystem(potTexture, snapTexture, lockPositions);
         plantGrowthSystem = new PlantGrowthSystem();
@@ -111,6 +122,11 @@ public class GameScreen implements Screen {
         shopLogo.draw(sprite);
         accessoryLogo.draw(sprite);
         shelfSystem.draw(sprite);
+
+        for (int i = 0; i < game.getPlants().size(); i++) {
+            Plant plant = game.getPlants().get(i);
+            sprite.draw(plant.getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width, plantBounds[i].height);
+        }
 
         accessory();
         camera.update();
