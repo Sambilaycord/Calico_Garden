@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class CalicoGarden extends Game {
 	private GameScreen gameScreen;
-	private MenuScreen menuScreen;
+	private AccessoryMenu AccessoryMenu;
 	private OrthographicCamera camera;
 	private Texture selectedAccessory;
 	public SpriteBatch batch;
@@ -19,7 +19,7 @@ public class CalicoGarden extends Game {
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 1400, 800); // Set the viewport size to your game's resolution
 		gameScreen = new GameScreen(this);
-		menuScreen = new MenuScreen(this);
+		AccessoryMenu = new AccessoryMenu(this);
 	}
 
 	public void showGameScreen() {
@@ -27,7 +27,7 @@ public class CalicoGarden extends Game {
     }
 
 	public void showMenuScreen() {
-		setScreen(menuScreen);
+		setScreen(AccessoryMenu);
 	}
 
 	public void setSelectedAccessory(Texture accessory) {
