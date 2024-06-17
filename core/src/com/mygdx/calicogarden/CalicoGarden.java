@@ -1,5 +1,8 @@
 package com.mygdx.calicogarden;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -26,6 +29,9 @@ public class CalicoGarden extends Game {
 
     private Sound buySFX;
     private Sound changeSCreenSFX;
+    private List<Plant> plants;
+
+    private Sound sfx;
     private Music bgm1;
     private Music bgm2;
 
@@ -39,7 +45,9 @@ public class CalicoGarden extends Game {
         gameScreen = new GameScreen(this);
         accessoryMenu = new AccessoryMenu(this);
         shopScreen = new ShopScreen(this);
+
         coins = 30; // Initialize coins
+        plants = new ArrayList<>();
 
         bgm1 = Gdx.audio.newMusic(Gdx.files.internal("music/bgm3.mp3"));
         bgm2 = Gdx.audio.newMusic(Gdx.files.internal("music/bgm2.mp3"));
@@ -94,6 +102,19 @@ public class CalicoGarden extends Game {
     public Texture getSelectedAccessory() {
         return selectedAccessory;
     }
+
+    public void addPlantToGameScreen(Plant plant) {
+        plants.add(plant);
+        showGameScreen(); // Switch to GameScreen after adding the plant
+    }
+
+    public List<Plant> getPlants() {
+        if (plants == null) {
+            plants = new ArrayList<>();
+        }
+        return plants;
+    }
+
 
     public OrthographicCamera getCamera() {
         return camera;

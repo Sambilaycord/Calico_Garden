@@ -2,6 +2,7 @@ package com.mygdx.calicogarden;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -15,13 +16,9 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 
-
 import java.text.DecimalFormat;
 
 public class GameScreen implements Screen {
-
-    public static final float SPEED = 10;
-
     private SpriteBatch sprite;
     private Texture bg;
     private Sprite cat;
@@ -39,6 +36,8 @@ public class GameScreen implements Screen {
     private DecimalFormat decimalFormat;
     private Rectangle accessoryLogoBounds;
     private Rectangle shopLogoBounds;
+    private Preferences prefs;
+    private Rectangle[] plantBounds;
     private Sound buySFX;
 
 
@@ -48,80 +47,123 @@ public class GameScreen implements Screen {
         font = new BitmapFont();
         timer = 0;
         decimalFormat = new DecimalFormat("00"); // Format for two-digit numbers
+
+        prefs = Gdx.app.getPreferences("CalicoGardenGameData");
+
+        plantBounds = new Rectangle[game.getPlants().size()];
+        for (int i = 0; i < game.getPlants().size(); i++) {
+            plantBounds[i] = new Rectangle(100 + i * 120, 300, 100, 100); // Example positions and sizes
+        }
     }
 
-    @Override
-    public void show() {
-        sprite = new SpriteBatch();
-        bg = new Texture("GameScreen/GameScreenBackground.png");
-        cat = new Sprite(new Texture("ming.png"));
-        accessoryLogo = new Sprite(new Texture("accessory_icon.png"));
-        shopLogo = new Sprite(new Texture("shop_icon.png"));
-        potTexture = new Texture("Pots/pot.png");
-        snapTexture = new Texture("Pots/potSnap.png");
 
+    @Override
+public void show() {
+    sprite = new SpriteBatch();
+    bg = new Texture("GameScreen/GameScreenBackground.png");
+    cat = new Sprite(new Texture("ming.png"));
+    accessoryLogo = new Sprite(new Texture("accessory_icon.png"));
+    shopLogo = new Sprite(new Texture("shop_icon.png"));
+    potTexture = new Texture("Pots/pot.png");
+    snapTexture = new Texture("Pots/potSnap.png");
+
+    day = prefs.getInteger("day", 1);
+    timer = prefs.getInteger("timeInSeconds", 0);
+
+    accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
+    shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
         buySFX = Gdx.audio.newSound(Gdx.files.internal("music/buy.mp3"));
 
         accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
         shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
 
-        float[][] lockPositions = {
-                {50f, 450f, 880f}, // Y: 50, Left X: 100, Right X: 300
-                {250f, 350f, 1150f}, // Y: 250, Left X: 50, Right X: 450
-                {460f, 450f, 1100f}, // Y: 460, Left X: 0, Right X: (screen width - pot width)
-                {625f, 650f, 1050f} // Y: 625, Left X: 200, Right X: screen width / 2
-        };
-
-        shelfSystem = new ShelfSystem(potTexture, snapTexture, lockPositions);
-        plantGrowthSystem = new PlantGrowthSystem();
-
-        game.music();
+    plantBounds = new Rectangle[game.getPlants().size()];
+    for (int i = 0; i < game.getPlants().size(); i++) {
+        plantBounds[i] = new Rectangle(100 + i * 120, 300, 100, 100); // Example positions and sizes
     }
 
-    @Override
-    public void render(float delta) {
-        ScreenUtils.clear(1, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        shelfSystem.update(delta, Gdx.input.getX(), Gdx.input.getY(), Gdx.input.isButtonPressed(Input.Buttons.LEFT));
-        shopLogo.setPosition(0, 600);
-        accessoryLogo.setPosition(0, 450);
+    shelfSystem = new ShelfSystem(game.getPlants().toArray(new Plant[0]));
+    plantGrowthSystem = new PlantGrowthSystem();
 
-        timer += delta * 360; // 360 in-game seconds per real second
-        int inGameSeconds = (int) timer;
+    game.music();
+}
 
-        if (inGameSeconds >= 86400) { // 86400 in-game seconds in 24 hours
-            day++;
-            timer -= 86400; // Reset the timer, keep the excess time
-            inGameSeconds = (int) timer;
-        }
 
-        int hours = (inGameSeconds / 3600) % 24;
-        int minutes = (inGameSeconds % 3600) / 60;
-        String formattedTime = decimalFormat.format(hours) + ":" + decimalFormat.format(minutes);
-        handleInput();
+@Override
+public void render(float delta) {
+    ScreenUtils.clear(1, 0, 0, 1);
+    shelfSystem.setPlantSize(0, 100, 100);
+    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        sprite.begin();
-        sprite.draw(bg, 0, 0);
-        cat.setPosition(-110,-110);
-        cat.draw(sprite);
-        shopLogo.draw(sprite);
-        accessoryLogo.draw(sprite);
-        shelfSystem.draw(sprite);
+    // Get touch input for dragging and resizing
+    int x = Gdx.input.getX(0);
+    int y = Gdx.input.getY(0);
+    boolean isTouched = Gdx.input.isTouched(0);
 
-        accessory();
-        camera.update();
+    int secondX = Gdx.input.isTouched(1) ? Gdx.input.getX(1) : x;
+    int secondY = Gdx.input.isTouched(1) ? Gdx.input.getY(1) : y;
+    boolean isSecondTouch = Gdx.input.isTouched(1);
 
-        sprite.setProjectionMatrix(camera.combined);
-        font.draw(sprite, "Day: " + day, 100, 540); // Display the current day
-        font.draw(sprite, "Time: " + formattedTime, 100, 500);
-        // Draw other UI elements
-        font.draw(sprite, "Plant Growth Stage: " + plantGrowthSystem.getGrowthStage(), 100, 460);
-        if (plantGrowthSystem.isFullyGrown()) {
-            font.draw(sprite, "Plant is fully grown!", 100, 420);
-        }
+    // Update the shelf system with the touch input
+    shelfSystem.update(delta, x, y, isTouched, isSecondTouch, secondX, secondY, camera);
 
-        sprite.end();
+    // Update UI elements
+    shopLogo.setPosition(0, 600);
+    accessoryLogo.setPosition(0, 450);
+
+    // Update the in-game timer
+    timer += delta * 480; // 480 in-game seconds per real second
+    int inGameSeconds = (int) timer;
+
+    if (inGameSeconds >= 86400) { // 86400 in-game seconds in 24 hours
+        day++;
+        timer -= 86400; // Reset the timer, keep the excess time
+        inGameSeconds = (int) timer;
     }
+
+    int hours = (inGameSeconds / 3600) % 24;
+    int minutes = (inGameSeconds % 3600) / 60;
+    String formattedTime = decimalFormat.format(hours) + ":" + decimalFormat.format(minutes);
+
+    // Handle input
+    handleInput();
+
+    // Begin sprite batch
+    sprite.begin();
+
+    // Draw background
+    sprite.draw(bg, 0, 0);
+
+    // Draw cat and logos
+    cat.setPosition(-110, -110);
+    cat.draw(sprite);
+    shopLogo.draw(sprite);
+    accessoryLogo.draw(sprite);
+
+    // Draw the shelf system (plants)
+    shelfSystem.draw(sprite);
+
+    // Draw additional plants from the game
+
+    // Call accessory method (if it handles additional drawing)
+    accessory();
+
+    // Update camera
+    camera.update();
+    sprite.setProjectionMatrix(camera.combined);
+
+    // Draw HUD (timer, day, plant growth information)
+    font.draw(sprite, "Time: " + formattedTime, 100, 760);
+    font.draw(sprite, "Day: " + day, 100, 740);
+    font.draw(sprite, "Plant Growth Stage: " + plantGrowthSystem.getGrowthStage(), 100, 720);
+    if (plantGrowthSystem.isFullyGrown()) {
+        font.draw(sprite, "Plant is fully grown!", 100, 420);
+    }
+
+    // End sprite batch
+    sprite.end();
+}
+
 
     private void handleInput() {
         if (Gdx.input.isTouched()) {
@@ -155,7 +197,7 @@ public class GameScreen implements Screen {
         if (accessory != null) {
             Sprite accessorySprite = new Sprite(accessory);
             accessorySprite.setSize(Gdx.graphics.getWidth() / 2.5f, Gdx.graphics.getHeight() / 1.4f);
-            accessorySprite.setPosition(-110,-110); // Adjust position to be on top of the cat
+            accessorySprite.setPosition(-110, -110); // Adjust position to be on top of the cat
             accessorySprite.draw(sprite);
         }
     }
@@ -172,7 +214,9 @@ public class GameScreen implements Screen {
 
     @Override
     public void pause() {
-        // Not implemented
+        prefs.putInteger("day", day);
+        prefs.putInteger("timeInSeconds", (int) timer);
+        prefs.flush();
     }
 
     @Override
@@ -182,7 +226,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void hide() {
-        // Not implemented
+        shelfSystem.saveState();
     }
 
     @Override

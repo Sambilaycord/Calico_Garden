@@ -1,117 +1,173 @@
 package com.mygdx.calicogarden;
 
+
+
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.graphics.Texture;
+
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Disposable;
 
-public class ShelfSystem {
+public class ShelfSystem implements Disposable {
 
-    private final Texture potTexture;
-    private final Texture potTexture2;
+    private Plant[] plants;
+    private Rectangle[] plantBounds;
+    private float[][] lockPositionsArray;
+    private boolean[] isLocked;
+    private boolean isDragging;
+    private boolean isResizing;
+    private int draggingIndex;
+    private int resizingIndex;
+    private float initialDistance;
 
-    private Rectangle potBounds1;
-    private Rectangle potBounds2;
+    private float offsetX = 1; 
+    private float offsetY = 5;
+    
+    public ShelfSystem(Plant[] plants) {
+        this.plants = plants;
+        
 
-    private final float[][] lockPositions;
+        // Initialize plantBounds based on the number of plants
+        plantBounds = new Rectangle[plants.length];
+        for (int i = 0; i < plants.length; i++) {
+            plantBounds[i] = new Rectangle(650 , 50, 100, 100);
+        }
 
-    private int currentLockIndex1;
-    private int currentLockIndex2;
-    private boolean draggingPot1; // Flag to track if pot1 is being dragged
-    private boolean draggingPot2; // Flag to track if pot2 is being dragged
+        // Initialize lock positions array
+        lockPositionsArray = new float[][] {
+            {50f, 450f, 1100f}, 
+            {250f, 350f, 1340f}, 
+            {460f, 450f, 1300f}, 
+            {625f, 650f, 1200f} 
+        };
 
-    private Preferences preferences;
+        // Initialize isLocked array
+        isLocked = new boolean[plants.length];
+        isDragging = false;
+        isResizing = false;
+        draggingIndex = -1;
+        resizingIndex = -1;
+        initialDistance = 0;
 
-    public ShelfSystem(Texture potTexture, Texture anotherPotTexture, float[][] lockPositions) {
-        this.potTexture = potTexture;
-        this.potTexture2 = anotherPotTexture;
-        this.lockPositions = lockPositions;
-        this.preferences = Gdx.app.getPreferences("PotPositions");
-
-        this.currentLockIndex1 = preferences.getInteger("pot1LockIndex", 0);
-        this.currentLockIndex2 = preferences.getInteger("pot2LockIndex", 0);
-
-        float pot1X = preferences.getFloat("pot1X", (Gdx.graphics.getWidth() - potTexture.getWidth()));
-        float pot1Y = preferences.getFloat("pot1Y", lockPositions[currentLockIndex1][0]);
-        float pot2X = preferences.getFloat("pot2X", (Gdx.graphics.getWidth() - potTexture2.getWidth()));
-        float pot2Y = preferences.getFloat("pot2Y", lockPositions[currentLockIndex2][0]);
-
-        this.potBounds1 = new Rectangle(pot1X, pot1Y, 150, 100);
-        this.potBounds2 = new Rectangle(pot2X, pot2Y, 150, 100);
+        // Load the state if available
+        loadState();
     }
 
-    public void update(float delta, float mouseX, float mouseY, boolean isLeftClick) {
-        float invertedMouseY = Gdx.graphics.getHeight() - mouseY;
-
-        if (isLeftClick) {
-            if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-                if (potBounds1.contains(mouseX, invertedMouseY)) {
-                    draggingPot1 = true;
-                    draggingPot2 = false;
-                } else if (potBounds2.contains(mouseX, invertedMouseY)) {
-                    draggingPot1 = false;
-                    draggingPot2 = true;
+    public void update(float delta, int x, int y, boolean isTouched, boolean isSecondTouch, int secondX, int secondY, OrthographicCamera camera) {
+        Vector3 cursorPos = new Vector3(x, y, 0);
+        Vector3 secondCursorPos = new Vector3(secondX, secondY, 0);
+        camera.unproject(cursorPos);
+        camera.unproject(secondCursorPos);
+    
+        if (isTouched && isSecondTouch) {
+            float distance = cursorPos.dst(secondCursorPos);
+    
+            if (!isResizing) {
+                for (int i = 0; i < plants.length; i++) {
+                    if (plantBounds[i].contains(cursorPos.x, cursorPos.y) || plantBounds[i].contains(secondCursorPos.x, secondCursorPos.y)) {
+                        isResizing = true;
+                        resizingIndex = i;
+                        initialDistance = distance;
+                        break;
+                    }
                 }
+            } else {
+                float scale = distance / initialDistance;
+                plantBounds[resizingIndex].width = 100 * scale;
+                plantBounds[resizingIndex].height = 100 * scale;
             }
-        }
-
-        // Release the pot and snap it to the nearest lock position
-        if (!Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-            if (draggingPot1) {
-                draggingPot1 = false;
-                snapToLockPosition(potBounds1, 1);
-                savePotPosition(1, potBounds1);
-            } else if (draggingPot2) {
-                draggingPot2 = false;
-                snapToLockPosition(potBounds2, 2);
-                savePotPosition(2, potBounds2);
+        } else if (isTouched) {
+            if (!isDragging) {
+                for (int i = 0; i < plants.length; i++) {
+                    if (plantBounds[i].contains(cursorPos.x, cursorPos.y)) {
+                        isDragging = true;
+                        draggingIndex = i;
+                        break;
+                    }
+                }
+            } else {
+                // Apply offsets here
+                plantBounds[draggingIndex].x = cursorPos.x - plantBounds[draggingIndex].width / 2 + offsetX;
+                plantBounds[draggingIndex].y = cursorPos.y - plantBounds[draggingIndex].height / 2 + offsetY;
             }
-        }
-
-        // Update the original pot's position if it's being dragged
-        if (draggingPot1) {
-            potBounds1.setPosition(mouseX - potBounds1.width / 2f, invertedMouseY - potBounds1.height / 2f);
-        } else if (draggingPot2) {
-            potBounds2.setPosition(mouseX - potBounds2.width / 2f, invertedMouseY - potBounds2.height / 2f);
-        }
-    }
-
-    private void snapToLockPosition(Rectangle potBounds, int potIndex) {
-        int currentLockIndex = getClosestLockPosition(potBounds.y);
-        potBounds.setPosition(potBounds.x, lockPositions[currentLockIndex][0]);
-        if (potIndex == 1) {
-            currentLockIndex1 = currentLockIndex;
         } else {
-            currentLockIndex2 = currentLockIndex;
-        }
-    }
-
-    private int getClosestLockPosition(float mouseY) {
-        int closestIndex = 0;
-        float closestDistance = Math.abs(mouseY - lockPositions[0][0]);
-
-        for (int i = 1; i < lockPositions.length; i++) {
-            float distance = Math.abs(mouseY - lockPositions[i][0]);
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestIndex = i;
+            if (isDragging) {
+                int closestLockIndex = getClosestLockPosition(cursorPos.y);
+                float[] closestLock = lockPositionsArray[closestLockIndex];
+    
+                plantBounds[draggingIndex].x = Math.max(closestLock[1], Math.min(cursorPos.x - plantBounds[draggingIndex].width / 2 + offsetX, closestLock[2] - plantBounds[draggingIndex].width));
+                plantBounds[draggingIndex].y = closestLock[0] + offsetY;
+                isLocked[draggingIndex] = true;
+    
+                isDragging = false;
+                draggingIndex = -1;
             }
         }
+    }
 
+    
+    private int getClosestLockPosition(float y) {
+        int closestIndex = 0;
+        float closestDistance = Math.abs(lockPositionsArray[0][0] - y); // Initialize with first lock
+        
+        for (int i = 1; i < lockPositionsArray.length; i++) {
+          float distance = Math.abs(lockPositionsArray[i][0] - y);
+          if (distance < closestDistance) {
+            closestIndex = i;
+            closestDistance = distance;
+          }
+        }
+      
         return closestIndex;
-    }
-
-    private void savePotPosition(int potIndex, Rectangle potBounds) {
-        preferences.putInteger("pot" + potIndex + "LockIndex", potIndex == 1 ? currentLockIndex1 : currentLockIndex2);
-        preferences.putFloat("pot" + potIndex + "X", potBounds.x);
-        preferences.putFloat("pot" + potIndex + "Y", potBounds.y);
-        preferences.flush();
-    }
-
+      }
+    
     public void draw(SpriteBatch batch) {
-        batch.draw(potTexture, potBounds1.x, potBounds1.y, Gdx.graphics.getWidth() / 7f, Gdx.graphics.getHeight() / 5f);
-        batch.draw(potTexture2, potBounds2.x, potBounds2.y, Gdx.graphics.getWidth() / 7f, Gdx.graphics.getHeight() / 5f);
+        for (int i = 0; i < plants.length; i++) {
+            // Draw plants based on plantBounds positions
+            batch.draw(plants[i].getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width * 2.5f, plantBounds[i].height * 2.5f);
+            
+        }
+    }
+
+    public void saveState() {
+        Preferences prefs = Gdx.app.getPreferences("PlantState");
+
+        for (int i = 0; i < plants.length; i++) {
+            prefs.putFloat("plant_" + i + "_x", plantBounds[i].x);
+            prefs.putFloat("plant_" + i + "_y", plantBounds[i].y);
+            prefs.putFloat("plant_" + i + "_width", plantBounds[i].width);
+            prefs.putFloat("plant_" + i + "_height", plantBounds[i].height);
+            prefs.putBoolean("plant_" + i + "_isLocked", isLocked[i]);
+        }
+
+        prefs.flush(); // This writes the changes to the file
+    }
+
+    public void loadState() {
+        Preferences prefs = Gdx.app.getPreferences("PlantState");
+
+        for (int i = 0; i < plants.length; i++) {
+            plantBounds[i].x = prefs.getFloat("plant_" + i + "_x", plantBounds[i].x);
+            plantBounds[i].y = prefs.getFloat("plant_" + i + "_y", plantBounds[i].y);
+            plantBounds[i].width = prefs.getFloat("plant_" + i + "_width", plantBounds[i].width);
+            plantBounds[i].height = prefs.getFloat("plant_" + i + "_height", plantBounds[i].height);
+            isLocked[i] = prefs.getBoolean("plant_" + i + "_isLocked", isLocked[i]);
+        }
+    }
+
+    public void setPlantSize(int index, float width, float height) {
+        if (index >= 0 && index < plantBounds.length) {
+            plantBounds[index].width = width;
+            plantBounds[index].height = height;
+        }
+    }
+    
+
+    @Override
+    public void dispose() {
+        // Dispose resources if any
     }
 }
