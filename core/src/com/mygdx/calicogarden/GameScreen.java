@@ -33,6 +33,7 @@ public class GameScreen implements Screen {
     private BitmapFont font;
     private float timer = 0;
     private int day = 1; // Add a day variable
+    private int currentDay;
     private DecimalFormat decimalFormat;
     private Rectangle accessoryLogoBounds;
     private Rectangle shopLogoBounds;
@@ -54,6 +55,8 @@ public class GameScreen implements Screen {
         for (int i = 0; i < game.getPlants().size(); i++) {
             plantBounds[i] = new Rectangle(100 + i * 120, 300, 100, 100); // Example positions and sizes
         }
+
+        currentDay = prefs.getInteger("day", 1);
     }
 
 
@@ -125,6 +128,13 @@ public void render(float delta) {
     int minutes = (inGameSeconds % 3600) / 60;
     String formattedTime = decimalFormat.format(hours) + ":" + decimalFormat.format(minutes);
 
+    //Update plant growth
+    int previousDay = currentDay;
+    currentDay = day;
+    if (currentDay > previousDay) {
+        plantGrowthSystem.newDay();
+    }
+
     // Handle input
     handleInput();
 
@@ -155,7 +165,6 @@ public void render(float delta) {
     // Draw HUD (timer, day, plant growth information)
     font.draw(sprite, "Time: " + formattedTime, 100, 760);
     font.draw(sprite, "Day: " + day, 100, 740);
-    font.draw(sprite, "Plant Growth Stage: " + plantGrowthSystem.getGrowthStage(), 100, 720);
     if (plantGrowthSystem.isFullyGrown()) {
         font.draw(sprite, "Plant is fully grown!", 100, 420);
     }
@@ -179,12 +188,26 @@ public void render(float delta) {
             }
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
-            game.showAccessoryMenu();
+        if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+            Vector3 cursorPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(cursorPos);
+
+            for (int i = 0; i < shelfSystem.getLockPositionsArray().length; i++) {
+                float[] lockPos = shelfSystem.getLockPositionsArray()[i];
+                float lockX = lockPos[1];
+                float lockY = lockPos[0];
+                float lockWidth = lockPos[2] - lockPos[1];
+                float lockHeight = 100f; // Adjust as needed
+
+                if (cursorPos.x >= lockX && cursorPos.x <= lockX + lockWidth && cursorPos.y >= lockY && cursorPos.y <= lockY + lockHeight) {
+                    plantGrowthSystem.waterPlant();
+                    break; // Exit loop once watered
+                }
+            }
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-            plantGrowthSystem.waterPlant();
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+            game.showAccessoryMenu();
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
