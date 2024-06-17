@@ -68,8 +68,6 @@ public class GameScreen implements Screen {
 
         camera.update();
         sprite.setProjectionMatrix(camera.combined);
-
-
         // Handle input
         handleInput();
 
