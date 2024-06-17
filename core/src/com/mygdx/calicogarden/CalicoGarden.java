@@ -1,10 +1,16 @@
 package com.mygdx.calicogarden;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 
 public class CalicoGarden extends Game {
     private GameScreen gameScreen;
@@ -18,6 +24,10 @@ public class CalicoGarden extends Game {
     private float potX = -1; // Initialize with an invalid position
     private float potY = -1;
 
+    private Sound sfx;
+    private Music bgm1;
+    private Music bgm2;
+
     @Override
     public void create() {
         batch = new SpriteBatch();
@@ -29,6 +39,13 @@ public class CalicoGarden extends Game {
         accessoryMenu = new AccessoryMenu(this);
         shopScreen = new ShopScreen(this);
         coins = 30; // Initialize coins
+
+        bgm1 = Gdx.audio.newMusic(Gdx.files.internal("music/bgm3.mp3"));
+        bgm2 = Gdx.audio.newMusic(Gdx.files.internal("music/bgm.mp3"));
+        bgm1.setLooping(true);
+        bgm2.setLooping(true);
+
+        music();
     }
 
     // Method to increase coins
@@ -89,5 +106,15 @@ public class CalicoGarden extends Game {
 
     public float getPotY() {
         return potY;
+    }
+
+    public void music(){
+        Screen currentScreen = getScreen();
+        if (currentScreen instanceof CatAnimation) {
+            bgm1.play();
+        } else {
+            bgm1.stop();
+            bgm2.play();
+        }
     }
 }

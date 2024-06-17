@@ -12,6 +12,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
+
 
 import java.text.DecimalFormat;
 
@@ -73,6 +76,8 @@ public class GameScreen implements Screen {
             shelfSystem.setPotX(game.getPotX());
             shelfSystem.setPotY(game.getPotY());
         }
+
+        game.music();
     }
 
     @Override
