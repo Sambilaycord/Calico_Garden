@@ -17,7 +17,6 @@ public class Plant {
         this.texture = texture;
         this.price = price;
         this.isOnShelf = false;
-    }
 
         this.width = texture.getWidth(); // Initialize width and height based on texture size
         this.height = texture.getHeight();
@@ -59,4 +58,13 @@ public class Plant {
     public void setOnShelf(boolean onShelf) {
         isOnShelf = onShelf;
     }
+
+    public float getWidth() {
+        return width;
+      }
+    
+      public float getHeight() {
+        return height;
+      }
 }
+

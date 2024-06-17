@@ -2,6 +2,7 @@ package com.mygdx.calicogarden;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -164,10 +165,6 @@ public void render(float delta) {
         font.draw(sprite, "Plant is fully grown!", 100, 420);
     }
 
-        for (Plant plant : plantsToAdd) {
-            sprite.draw(plant.getTexture(), 650f, 50f, plant.getWidth(), plant.getHeight());
-        }
-        plantsToAdd.clear();
 
         sprite.end();
     }

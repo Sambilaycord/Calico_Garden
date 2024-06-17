@@ -119,17 +119,10 @@ public class ShelfSystem implements Disposable {
                 closestIndex = i;
                 closestDistance = distance;
             }
-            float distance = Math.abs(lockPositionsArray[i][0] - y);
-            if (distance < closestDistance) {
-                closestIndex = i;
-                closestDistance = distance;
-            }
         }
 
 
         return closestIndex;
-    }
-
     }
 
     public void draw(SpriteBatch batch) {
