@@ -118,6 +118,10 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
             plantGrowthSystem.waterPlant();
         }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            game.showShopScreen();
+        }
     }
 
     @Override
