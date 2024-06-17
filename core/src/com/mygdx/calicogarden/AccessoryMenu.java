@@ -1,7 +1,6 @@
 package com.mygdx.calicogarden;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
@@ -15,7 +14,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 
 public class AccessoryMenu implements Screen {
     private CalicoGarden game;
-    private GameScreen maingame;
     private SpriteBatch sprite;
     private OrthographicCamera camera;
     private ShelfSystem shelfSystem;
@@ -106,7 +104,6 @@ public class AccessoryMenu implements Screen {
         accessoryBounds4 = new Rectangle(1030, 450, accessory4.getWidth(), accessory4.getHeight());
         accessoryBounds5 = new Rectangle(500, 100, accessory5.getWidth(), accessory5.getHeight());
         accessoryBounds6 = new Rectangle(900, 100, accessory6.getWidth(), accessory6.getHeight());
-
 
         font = new BitmapFont();
     }
@@ -222,8 +219,6 @@ public class AccessoryMenu implements Screen {
                     game.showGameScreen();
                 }
             }
-
-
         }
     }
 
