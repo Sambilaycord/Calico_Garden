@@ -6,6 +6,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -13,17 +14,25 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class ShopScreen implements Screen {
-
-    private SpriteBatch sprite;
-    private Texture bg;
-    private Texture buttonTexture;
-    private Texture buttonTextureHover;
     private CalicoGarden game;
     private OrthographicCamera camera;
     private BitmapFont font;
+    private SpriteBatch sprite;
+    private ShelfSystem shelfSystem;
+
+    private Texture bg;
+    private Texture buttonTexture;
+    private Texture buttonTextureHover;
+
 
     private Rectangle buttonBounds;
     private boolean isHovered = false;
+
+    private Sprite shopLogo;
+    private Sprite accessoryLogo;
+
+    private Rectangle accessoryLogoBounds;
+    private Rectangle shopLogoBounds;
 
     public ShopScreen(CalicoGarden game) {
         this.game = game;
@@ -38,6 +47,12 @@ public class ShopScreen implements Screen {
         buttonTexture = new Texture("TestButtons/RedSquareButton.png");
         buttonTextureHover = new Texture("TestButtons/GreenSquareButton.png");
 
+        accessoryLogo = new Sprite(new Texture("accessory_icon.png"));
+        shopLogo = new Sprite(new Texture("shop_icon.png"));
+
+        accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
+        shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
+
         // Initialize button bounds
         buttonBounds = new Rectangle(150, 225, 200, 50);
     }
@@ -45,6 +60,9 @@ public class ShopScreen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
+        shopLogo.setPosition(0, 600);
+        accessoryLogo.setPosition(0, 450);
+        handleInput();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
             game.showGameScreen();
@@ -68,6 +86,8 @@ public class ShopScreen implements Screen {
         sprite.begin();
         sprite.draw(bg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         font.draw(sprite, "Coins: " + game.getCoins(), 20, 40);
+        shopLogo.draw(sprite);
+        accessoryLogo.draw(sprite);
 
         if (isHovered) {
             sprite.draw(buttonTextureHover, buttonBounds.x, buttonBounds.y, buttonBounds.width, buttonBounds.height);
@@ -76,6 +96,20 @@ public class ShopScreen implements Screen {
         }
 
         sprite.end();
+    }
+
+    private void handleInput() {
+        if (Gdx.input.isTouched()) {
+            Vector3 touchPos = new Vector3();
+            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(touchPos);
+
+            if (accessoryLogoBounds.contains(touchPos.x, touchPos.y)) {
+                game.showAccessoryMenu();
+            } else if (shopLogoBounds.contains(touchPos.x, touchPos.y)) {
+                game.showGameScreen();
+            }
+        }
     }
 
     @Override
