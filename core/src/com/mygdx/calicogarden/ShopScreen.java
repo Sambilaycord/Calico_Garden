@@ -19,7 +19,7 @@ public class ShopScreen implements Screen {
     private BitmapFont font;
     private SpriteBatch sprite;
     private ShelfSystem shelfSystem;
-
+    
     private Texture bg;
     private Texture buttonTexture;
     private Texture buttonTextureHover;

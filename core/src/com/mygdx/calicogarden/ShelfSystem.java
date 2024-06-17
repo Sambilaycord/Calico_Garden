@@ -111,7 +111,22 @@ public class ShelfSystem {
     }
 
     public void draw(SpriteBatch batch) {
-        batch.draw(potTexture, potBounds1.x, potBounds1.y, Gdx.graphics.getWidth() / 7f, Gdx.graphics.getHeight() / 5f);
-        batch.draw(potTexture2, potBounds2.x, potBounds2.y, Gdx.graphics.getWidth() / 7f, Gdx.graphics.getHeight() / 5f);
+        float potWidth = Gdx.graphics.getWidth() / 7f;
+        float potHeight = Gdx.graphics.getHeight() / 5f;
+
+        if (currentLockIndex1 > 0) {
+            potWidth = potWidth / 1.5f; //
+            potHeight = potHeight / 1.5f; // 
+        }
+        batch.draw(potTexture, potBounds1.x, potBounds1.y, potWidth, potHeight);
+
+        potWidth = Gdx.graphics.getWidth() / 7f; // Reset size for the second pot
+        potHeight = Gdx.graphics.getHeight() / 5f;
+
+        if (currentLockIndex2 > 0) {
+            potWidth /= 1.5f; // Reduce the size by 10%
+            potHeight /= 1.5f; // Reduce the size by 10%
+        }
+        batch.draw(potTexture2, potBounds2.x, potBounds2.y, potWidth, potHeight);
     }
 }
