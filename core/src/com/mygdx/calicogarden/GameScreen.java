@@ -14,7 +14,6 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
 
 import java.text.DecimalFormat;
 
@@ -38,7 +37,6 @@ public class GameScreen implements Screen {
     private Rectangle shopLogoBounds;
     private Preferences prefs;
     private Rectangle[] plantBounds;
-    private Sound buySFX;
 
 
     public GameScreen(CalicoGarden game) {
@@ -50,10 +48,6 @@ public class GameScreen implements Screen {
 
         prefs = Gdx.app.getPreferences("CalicoGardenGameData");
 
-        plantBounds = new Rectangle[game.getPlants().size()];
-        for (int i = 0; i < game.getPlants().size(); i++) {
-            plantBounds[i] = new Rectangle(100 + i * 120, 300, 100, 100); // Example positions and sizes
-        }
     }
 
 
@@ -72,15 +66,6 @@ public void show() {
 
     accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
     shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
-        buySFX = Gdx.audio.newSound(Gdx.files.internal("music/buy.mp3"));
-
-        accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
-        shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
-
-    plantBounds = new Rectangle[game.getPlants().size()];
-    for (int i = 0; i < game.getPlants().size(); i++) {
-        plantBounds[i] = new Rectangle(100 + i * 120, 300, 100, 100); // Example positions and sizes
-    }
 
     shelfSystem = new ShelfSystem(game.getPlants().toArray(new Plant[0]));
     plantGrowthSystem = new PlantGrowthSystem();
@@ -91,7 +76,7 @@ public void show() {
 
 @Override
 public void render(float delta) {
-    ScreenUtils.clear(1, 0, 0, 1);
+    ScreenUtils.clear(0, 0, 0, 1);
     shelfSystem.setPlantSize(0, 100, 100);
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -167,7 +152,6 @@ public void render(float delta) {
 
     private void handleInput() {
         if (Gdx.input.isTouched()) {
-            buySFX.play();
             Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);

@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 
 public class AccessoryMenu implements Screen {
     private CalicoGarden game;
@@ -60,9 +61,7 @@ public class AccessoryMenu implements Screen {
     private Rectangle buyButtonBounds6;
 
     private Sound buySFX;
-
-    private int money = 1000;
-
+    private BitmapFont font;
 
     public AccessoryMenu(CalicoGarden game) {
         this.game = game;
@@ -107,6 +106,9 @@ public class AccessoryMenu implements Screen {
         accessoryBounds4 = new Rectangle(1030, 450, accessory4.getWidth(), accessory4.getHeight());
         accessoryBounds5 = new Rectangle(500, 100, accessory5.getWidth(), accessory5.getHeight());
         accessoryBounds6 = new Rectangle(900, 100, accessory6.getWidth(), accessory6.getHeight());
+
+
+        font = new BitmapFont();
     }
 
     @Override
@@ -119,6 +121,14 @@ public class AccessoryMenu implements Screen {
         sprite.begin();
         handleInput();
         sprite.draw(bg, 0, 0);
+        font.draw(sprite, "100", 100, 690);
+        font.draw(sprite, "200", 430, 690);
+        font.draw(sprite, "300", 740, 690);
+        font.draw(sprite, "400", 1050, 690);
+        font.draw(sprite, "500", 500, 330);
+        font.draw(sprite, "600", 900, 330);
+
+
         sprite.draw(accessory1, accessoryBounds1.x, accessoryBounds1.y);
         sprite.draw(accessory2, accessoryBounds2.x, accessoryBounds2.y);
         sprite.draw(accessory3, accessoryBounds3.x, accessoryBounds3.y);
@@ -136,7 +146,6 @@ public class AccessoryMenu implements Screen {
         sprite.draw(exitButton, exitButtonBounds.x, exitButtonBounds.y);
         sprite.end();
 
-
     }
 
     private void handleInput() {
@@ -151,9 +160,9 @@ public class AccessoryMenu implements Screen {
             }
 
             if (buyButtonBounds1.contains(touchPos.x, touchPos.y)) {
-                if (!accessory1Bol && money >= 100) {
+                if (!accessory1Bol && game.getCoins() >= 100) {
                     accessory1Bol = true;
-                    money -= 100;
+                    game.subtractCoins(100);
                 }
 
                 if (accessory1Bol) {
@@ -162,9 +171,9 @@ public class AccessoryMenu implements Screen {
                 }
 
             } else if (buyButtonBounds2.contains(touchPos.x, touchPos.y)) {
-                if (!accessory2Bol && money >= 100) {
+                if (!accessory2Bol && game.getCoins() >= 200) {
                     accessory2Bol = true;
-                    money -= 100;
+                    game.subtractCoins(200);
                 }
 
                 if (accessory2Bol) {
@@ -173,9 +182,9 @@ public class AccessoryMenu implements Screen {
                 }
 
             } else if (buyButtonBounds3.contains(touchPos.x, touchPos.y)) {
-                if (!accessory3Bol && money >= 100) {
+                if (!accessory3Bol && game.getCoins() >= 300) {
                     accessory3Bol = true;
-                    money -= 100;
+                    game.subtractCoins(300);
                 }
 
                 if (accessory3Bol) {
@@ -183,9 +192,9 @@ public class AccessoryMenu implements Screen {
                     game.showGameScreen();
                 }
             } else if (buyButtonBounds4.contains(touchPos.x, touchPos.y)) {
-                if (!accessory4Bol && money >= 100) {
+                if (!accessory4Bol && game.getCoins() >= 400) {
                     accessory4Bol = true;
-                    money -= 100;
+                    game.subtractCoins(400);
                 }
 
                 if (accessory4Bol) {
@@ -193,9 +202,9 @@ public class AccessoryMenu implements Screen {
                     game.showGameScreen();
                 }
             } else if (buyButtonBounds5.contains(touchPos.x, touchPos.y)) {
-                if (!accessory5Bol && money >= 100) {
+                if (!accessory5Bol && game.getCoins() >= 500) {
                     accessory5Bol = true;
-                    money -= 100;
+                    game.subtractCoins(500);
                 }
 
                 if (accessory5Bol) {
@@ -203,9 +212,9 @@ public class AccessoryMenu implements Screen {
                     game.showGameScreen();
                 }
             } else if (buyButtonBounds6.contains(touchPos.x, touchPos.y)) {
-                if (!accessory6Bol && money >= 100) {
+                if (!accessory6Bol && game.getCoins() >= 600) {
                     accessory6Bol = true;
-                    money -= 100;
+                    game.subtractCoins(600);
                 }
 
                 if (accessory6Bol) {
@@ -220,7 +229,7 @@ public class AccessoryMenu implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        // Handle resize
+        font.getData().setScale(2.0f, 2.0f);
     }
 
 
