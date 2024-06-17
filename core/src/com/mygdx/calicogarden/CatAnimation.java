@@ -59,13 +59,13 @@ public class CatAnimation implements Screen {
         frameDurations = new Array<>(new Float[]{FRAME_TIME_1, FRAME_TIME_2_3, FRAME_TIME_2_3});
         
         // Initialize catX and catY now that the viewport is set up
-        catX = camera.viewportWidth / 2.7f;
+        catX = camera.viewportWidth / 2.6f;
         catY = camera.viewportHeight / 6f;
 
         // Position and size of the splash (start button)
-        splashWidth = camera.viewportWidth / 2f;
+        splashWidth = camera.viewportWidth / 4f;
         splashHeight = camera.viewportHeight / 15f;
-        splashX = (camera.viewportWidth - splashWidth) / 2;
+        splashX = (camera.viewportWidth - splashWidth) / 2.2f;
         splashY = camera.viewportHeight / 1.5f;
     }
 

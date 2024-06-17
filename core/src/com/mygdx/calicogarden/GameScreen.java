@@ -3,20 +3,15 @@ package com.mygdx.calicogarden;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
+
+import java.text.DecimalFormat;
 
 public class GameScreen implements Screen {
 
@@ -26,13 +21,19 @@ public class GameScreen implements Screen {
     private CalicoGarden game;
     private OrthographicCamera camera;
     private ShelfSystem shelfSystem;
+    private PlantGrowthSystem plantGrowthSystem;
     private Texture potTexture;
-    private BitmapFont font;    // Font for rendering text
-    
+    private Texture snapTexture;
+    private BitmapFont font;
+    private float timer = 0;
+    private DecimalFormat decimalFormat;
+
     public GameScreen(CalicoGarden game) {
         this.game = game;
         this.camera = game.getCamera();
-        this.font = new BitmapFont(); // Initialize the font for text rendering
+        font = new BitmapFont();
+        timer = 0;
+        decimalFormat = new DecimalFormat("00"); // Format for two-digit numbers
     }
 
     @Override
@@ -41,80 +42,103 @@ public class GameScreen implements Screen {
         bg = new Texture("GameScreen/GameScreenBackground.png");
         cat = new Sprite(new Texture("Cat.png"));
         potTexture = new Texture("Pots/pot.png");
-        shelfSystem = new ShelfSystem(potTexture, 0, 0);
+        snapTexture = new Texture("Pots/potSnap.png");
+        float[][] lockPositions = {
+            {50f, 450f, 880f},
+            {250f, 350f, 1150f},
+            {460f, 450f, 1100f},
+            {625f, 650f, 1050f}
+        };
+
+        shelfSystem = new ShelfSystem(potTexture, snapTexture, lockPositions);
+        plantGrowthSystem = new PlantGrowthSystem();
+
+        // Set the pot position if it has been saved previously
+        if (game.getPotX() != -1 && game.getPotY() != -1) {
+            shelfSystem.setPotX(game.getPotX());
+            shelfSystem.setPotY(game.getPotY());
+        }
     }
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(1, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         camera.update();
         sprite.setProjectionMatrix(camera.combined);
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
-            game.showMenuScreen();
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-            game.showShopScreen();
-        }
-
-        // Check for click on the pot and update dragging state accordingly
-        if (shelfSystem.isPotClicked(Gdx.input.getX(), Gdx.input.getY())) {
-            shelfSystem.setDragging(false); // Stop dragging on click
-
-            float potX = Gdx.input.getX() - shelfSystem.getPotTexture().getWidth() / 4f;
-            float potY = Gdx.input.getY() - shelfSystem.getPotTexture().getHeight() / 4f;
-            
-            // Clamp pot position to stay within screen bounds
-            potX = Math.min(potX, Gdx.graphics.getWidth() - shelfSystem.getPotTexture().getWidth());
-            potX = Math.max(potX, 0);
-            potY = Math.min(potY, Gdx.graphics.getHeight() - shelfSystem.getPotTexture().getHeight());
-            potY = Math.max(potY, 0);
-            
-            shelfSystem.setPotX(potX);
-            shelfSystem.setPotY(potY);
-        }
+        handleInput();
 
         shelfSystem.update(delta, Gdx.input.getX(), Gdx.input.getY());
 
         sprite.begin();
-
         sprite.draw(bg, 0, 0);
         cat.setSize(Gdx.graphics.getWidth() / 4f, Gdx.graphics.getHeight() / 2f);
         cat.draw(sprite);
-
         Texture accessory = game.getSelectedAccessory();
         if (accessory != null) {
             sprite.draw(accessory, 0, 0); // Adjust position to be on top of the cat
         }
+        shelfSystem.draw(sprite);
 
-
-        sprite.draw(shelfSystem.getPotTexture(), shelfSystem.getPotX(), shelfSystem.getPotY(), shelfSystem.getPotTexture().getWidth() / 4f, shelfSystem.getPotTexture().getHeight() / 4f);
         // Display coins at bottom left corner
         font.draw(sprite, "Coins: " + game.getCoins(), 20, 40);
-
         sprite.end();
+
+        // Update the game timer
+        timer += delta;
+        plantGrowthSystem.update(delta);
+
+        sprite.begin();
+        // Format the timer to display in 24-hour format
+        int hours = (int) (timer / 3600);
+        int minutes = (int) ((timer % 3600) / 60);
+        String formattedTime = decimalFormat.format(hours) + ":" + decimalFormat.format(minutes);
+        font.draw(sprite, "Time: " + formattedTime, 100, 500);
+
+        // Draw other UI elements
+        font.draw(sprite, "Plant Growth Stage: " + plantGrowthSystem.getGrowthStage(), 100, 460);
+        if (plantGrowthSystem.isFullyGrown()) {
+            font.draw(sprite, "Plant is fully grown!", 100, 420);
+        }
+        sprite.end();
+    }
+
+    private void handleInput() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+            game.setPotPosition(shelfSystem.getPotX(), shelfSystem.getPotY());
+            game.showMenuScreen();
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+            plantGrowthSystem.waterPlant();
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            game.showShopScreen();
+        }
+
     }
 
     @Override
     public void resize(int width, int height) {
-        // Handle resize
+        camera.setToOrtho(false, width, height);
     }
 
     @Override
     public void pause() {
-        // Handle pause
+        // Not implemented
     }
 
     @Override
     public void resume() {
-        // Handle resume
+        // Not implemented
     }
 
     @Override
     public void hide() {
-        // Handle hide
+        // Not implemented
     }
 
     @Override
@@ -122,5 +146,8 @@ public class GameScreen implements Screen {
         sprite.dispose();
         bg.dispose();
         cat.getTexture().dispose();
+        potTexture.dispose();
+        snapTexture.dispose();
+        font.dispose();
     }
 }
