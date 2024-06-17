@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class ShopScreen implements Screen {
+    
 
     private SpriteBatch sprite;
     private Texture bg;
@@ -65,7 +66,7 @@ public class ShopScreen implements Screen {
     }
 
     @Override
-public void render(float delta) {
+    public void render(float delta) {
     ScreenUtils.clear(0, 0, 0, 1);
 
     if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
@@ -104,12 +105,11 @@ public void render(float delta) {
 
     // Draw plants
     for (int i = 0; i < plants.length; i++) {
-        sprite.draw(plants[i].getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width, plantBounds[i].height);
+        sprite.draw(plants[i].getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width * 2f, plantBounds[i].height * 2f);
     }
 
     sprite.end();
 }
-
 
     @Override
     public void resize(int width, int height) {
@@ -143,3 +143,5 @@ public void render(float delta) {
         shelfSystem.dispose(); // Dispose shelfSystem resources
     }
 }
+
+

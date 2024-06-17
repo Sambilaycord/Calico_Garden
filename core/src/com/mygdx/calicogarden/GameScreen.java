@@ -86,6 +86,7 @@ public void show() {
 @Override
 public void render(float delta) {
     ScreenUtils.clear(1, 0, 0, 1);
+    shelfSystem.setPlantSize(0, 100, 100);
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
     // Get touch input for dragging and resizing
@@ -137,11 +138,7 @@ public void render(float delta) {
     shelfSystem.draw(sprite);
 
     // Draw additional plants from the game
-    for (int i = 0; i < game.getPlants().size(); i++) {
-        Plant plant = game.getPlants().get(i);
-        sprite.draw(plant.getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width, plantBounds[i].height);
-    }
-
+  
     // Call accessory method (if it handles additional drawing)
     accessory();
 

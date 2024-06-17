@@ -1,7 +1,10 @@
 package com.mygdx.calicogarden;
 
+
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
+
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
@@ -12,7 +15,7 @@ public class ShelfSystem implements Disposable {
 
     private Plant[] plants;
     private Rectangle[] plantBounds;
-    private Rectangle[] lockPositions;
+    private float[][] lockPositionsArray;
     private boolean[] isLocked;
     private boolean isDragging;
     private boolean isResizing;
@@ -20,26 +23,26 @@ public class ShelfSystem implements Disposable {
     private int resizingIndex;
     private float initialDistance;
 
+    private float offsetX = 1; 
+    private float offsetY = 5;
+    
     public ShelfSystem(Plant[] plants) {
         this.plants = plants;
+        
 
         // Initialize plantBounds based on the number of plants
         plantBounds = new Rectangle[plants.length];
         for (int i = 0; i < plants.length; i++) {
-            plantBounds[i] = new Rectangle(100 + i * 120, 300, 100, 100);
+            plantBounds[i] = new Rectangle(650 , 50, 100, 100);
         }
 
-        // Initialize lock positions
-        float[][] lockPositionsArray = {
+        // Initialize lock positions array
+        lockPositionsArray = new float[][] {
             {50f, 450f, 1100f}, 
             {250f, 350f, 1340f}, 
             {460f, 450f, 1300f}, 
             {625f, 650f, 1200f} 
         };
-        this.lockPositions = new Rectangle[lockPositionsArray.length];
-        for (int i = 0; i < lockPositionsArray.length; i++) {
-            this.lockPositions[i] = new Rectangle(lockPositionsArray[i][0], lockPositionsArray[i][1], lockPositionsArray[i][2] - lockPositionsArray[i][1], 100);
-        }
 
         // Initialize isLocked array
         isLocked = new boolean[plants.length];
@@ -58,10 +61,10 @@ public class ShelfSystem implements Disposable {
         Vector3 secondCursorPos = new Vector3(secondX, secondY, 0);
         camera.unproject(cursorPos);
         camera.unproject(secondCursorPos);
-
+    
         if (isTouched && isSecondTouch) {
             float distance = cursorPos.dst(secondCursorPos);
-
+    
             if (!isResizing) {
                 for (int i = 0; i < plants.length; i++) {
                     if (plantBounds[i].contains(cursorPos.x, cursorPos.y) || plantBounds[i].contains(secondCursorPos.x, secondCursorPos.y)) {
@@ -86,40 +89,46 @@ public class ShelfSystem implements Disposable {
                     }
                 }
             } else {
-                plantBounds[draggingIndex].x = cursorPos.x - plantBounds[draggingIndex].width / 2;
-                plantBounds[draggingIndex].y = cursorPos.y - plantBounds[draggingIndex].height / 2;
+                // Apply offsets here
+                plantBounds[draggingIndex].x = cursorPos.x - plantBounds[draggingIndex].width / 2 + offsetX;
+                plantBounds[draggingIndex].y = cursorPos.y - plantBounds[draggingIndex].height / 2 + offsetY;
             }
         } else {
             if (isDragging) {
-                // Check for snapping to lock positions
-                boolean snapped = false;
-                for (Rectangle lockPosition : lockPositions) {
-                    if (lockPosition.contains(plantBounds[draggingIndex].x, plantBounds[draggingIndex].y)) {
-                        plantBounds[draggingIndex].x = Math.max(lockPosition.x, Math.min(plantBounds[draggingIndex].x, lockPosition.x + lockPosition.width - plantBounds[draggingIndex].width));
-                        plantBounds[draggingIndex].y = lockPosition.y;
-                        isLocked[draggingIndex] = true;
-                        snapped = true;
-                        break;
-                    }
-                }
-                if (!snapped) {
-                    isLocked[draggingIndex] = false;
-                }
+                int closestLockIndex = getClosestLockPosition(cursorPos.y);
+                float[] closestLock = lockPositionsArray[closestLockIndex];
+    
+                plantBounds[draggingIndex].x = Math.max(closestLock[1], Math.min(cursorPos.x - plantBounds[draggingIndex].width / 2 + offsetX, closestLock[2] - plantBounds[draggingIndex].width));
+                plantBounds[draggingIndex].y = closestLock[0] + offsetY;
+                isLocked[draggingIndex] = true;
+    
                 isDragging = false;
                 draggingIndex = -1;
-            }
-
-            if (isResizing) {
-                isResizing = false;
-                resizingIndex = -1;
             }
         }
     }
 
+    
+    private int getClosestLockPosition(float y) {
+        int closestIndex = 0;
+        float closestDistance = Math.abs(lockPositionsArray[0][0] - y); // Initialize with first lock
+        
+        for (int i = 1; i < lockPositionsArray.length; i++) {
+          float distance = Math.abs(lockPositionsArray[i][0] - y);
+          if (distance < closestDistance) {
+            closestIndex = i;
+            closestDistance = distance;
+          }
+        }
+      
+        return closestIndex;
+      }
+    
     public void draw(SpriteBatch batch) {
         for (int i = 0; i < plants.length; i++) {
             // Draw plants based on plantBounds positions
-            batch.draw(plants[i].getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width, plantBounds[i].height);
+            batch.draw(plants[i].getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width * 2.5f, plantBounds[i].height * 2.5f);
+            
         }
     }
 
@@ -148,6 +157,14 @@ public class ShelfSystem implements Disposable {
             isLocked[i] = prefs.getBoolean("plant_" + i + "_isLocked", isLocked[i]);
         }
     }
+
+    public void setPlantSize(int index, float width, float height) {
+        if (index >= 0 && index < plantBounds.length) {
+            plantBounds[index].width = width;
+            plantBounds[index].height = height;
+        }
+    }
+    
 
     @Override
     public void dispose() {
