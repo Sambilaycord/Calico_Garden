@@ -1,11 +1,9 @@
 package com.mygdx.calicogarden;
 
-
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
-
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -23,17 +21,16 @@ public class ShelfSystem implements Disposable {
     private int resizingIndex;
     private float initialDistance;
 
-    private float offsetX = 1; 
-    private float offsetY = 5;
-    
     public ShelfSystem(Plant[] plants) {
         this.plants = plants;
-        
 
         // Initialize plantBounds based on the number of plants
         plantBounds = new Rectangle[plants.length];
         for (int i = 0; i < plants.length; i++) {
-            plantBounds[i] = new Rectangle(650 , 50, 100, 100);
+            Texture plantTexture = plants[i].getTexture(); 
+            float plantWidth = plantTexture.getWidth(); 
+            float plantHeight = plantTexture.getHeight();
+            plantBounds[i] = new Rectangle(650, 50, plantWidth, plantHeight); // Assuming plants[i] has getHeight()
         }
 
         // Initialize lock positions array
@@ -61,10 +58,10 @@ public class ShelfSystem implements Disposable {
         Vector3 secondCursorPos = new Vector3(secondX, secondY, 0);
         camera.unproject(cursorPos);
         camera.unproject(secondCursorPos);
-    
+
         if (isTouched && isSecondTouch) {
             float distance = cursorPos.dst(secondCursorPos);
-    
+
             if (!isResizing) {
                 for (int i = 0; i < plants.length; i++) {
                     if (plantBounds[i].contains(cursorPos.x, cursorPos.y) || plantBounds[i].contains(secondCursorPos.x, secondCursorPos.y)) {
@@ -90,46 +87,44 @@ public class ShelfSystem implements Disposable {
                 }
             } else {
                 // Apply offsets here
-                plantBounds[draggingIndex].x = cursorPos.x - plantBounds[draggingIndex].width / 2 + offsetX;
-                plantBounds[draggingIndex].y = cursorPos.y - plantBounds[draggingIndex].height / 2 + offsetY;
+                plantBounds[draggingIndex].x = cursorPos.x - plantBounds[draggingIndex].width / 2 ;
+                plantBounds[draggingIndex].y = cursorPos.y - plantBounds[draggingIndex].height / 2 ;
             }
         } else {
             if (isDragging) {
                 int closestLockIndex = getClosestLockPosition(cursorPos.y);
                 float[] closestLock = lockPositionsArray[closestLockIndex];
-    
-                plantBounds[draggingIndex].x = Math.max(closestLock[1], Math.min(cursorPos.x - plantBounds[draggingIndex].width / 2 + offsetX, closestLock[2] - plantBounds[draggingIndex].width));
-                plantBounds[draggingIndex].y = closestLock[0] + offsetY;
+
+                plantBounds[draggingIndex].x = Math.max(closestLock[1], Math.min(cursorPos.x - plantBounds[draggingIndex].width / 2 , closestLock[2] - plantBounds[draggingIndex].width));
+                plantBounds[draggingIndex].y = closestLock[0];
                 isLocked[draggingIndex] = true;
-    
+
                 isDragging = false;
                 draggingIndex = -1;
             }
         }
     }
 
-    
     private int getClosestLockPosition(float y) {
         int closestIndex = 0;
         float closestDistance = Math.abs(lockPositionsArray[0][0] - y); // Initialize with first lock
-        
+
         for (int i = 1; i < lockPositionsArray.length; i++) {
-          float distance = Math.abs(lockPositionsArray[i][0] - y);
-          if (distance < closestDistance) {
-            closestIndex = i;
-            closestDistance = distance;
-          }
+            float distance = Math.abs(lockPositionsArray[i][0] - y);
+            if (distance < closestDistance) {
+                closestIndex = i;
+                closestDistance = distance;
+            }
         }
-      
+
         return closestIndex;
-      }
-    
+    }
+
     public void draw(SpriteBatch batch) {
         for (int i = 0; i < plants.length; i++) {
             // Draw plants based on plantBounds positions
             batch.draw(plants[i].getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width * 2.5f, plantBounds[i].height * 2.5f);
-            
-        }
+        }//batch.draw(plants[i].getTexture(), 650f, 50f, plantBounds[i].width * 2.5f, plantBounds[i].height * 2.5f);
     }
 
     public void saveState() {
@@ -164,10 +159,18 @@ public class ShelfSystem implements Disposable {
             plantBounds[index].height = height;
         }
     }
+
+    public void setPlantPosition(int index, float x, float y) {
+        if (index >= 0 && index < plantBounds.length) {
+            plantBounds[index].x = x;
+            plantBounds[index].y = y;
+        }
+    }
     
 
     @Override
     public void dispose() {
         // Dispose resources if any
     }
+    
 }
