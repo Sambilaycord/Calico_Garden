@@ -40,7 +40,7 @@ public class GameScreen implements Screen {
     public void show() {
         sprite = new SpriteBatch();
         bg = new Texture("GameScreen/GameScreenBackground.png");
-        cat = new Sprite(new Texture("Cat.png"));
+        cat = new Sprite(new Texture("ming.png"));
 
         potTexture = new Texture("Pots/pot.png");
         snapTexture = new Texture("Pots/potSnap.png");
@@ -78,11 +78,16 @@ public class GameScreen implements Screen {
 
         sprite.begin();
         sprite.draw(bg, 0, 0);
-        cat.setSize(Gdx.graphics.getWidth() / 4f, Gdx.graphics.getHeight() / 2f);
+        cat.setSize(Gdx.graphics.getWidth() / 2.5f, Gdx.graphics.getHeight() / 1.4f);
+        cat.setPosition(-110,-110);
         cat.draw(sprite);
+
         Texture accessory = game.getSelectedAccessory();
         if (accessory != null) {
-            sprite.draw(accessory, 0, 0); // Adjust position to be on top of the cat
+            Sprite accessorySprite = new Sprite(accessory);
+            accessorySprite.setSize(Gdx.graphics.getWidth() / 2.5f, Gdx.graphics.getHeight() / 1.4f);
+            accessorySprite.setPosition(-110,-110); // Adjust position to be on top of the cat
+            accessorySprite.draw(sprite);
         }
         shelfSystem.draw(sprite);
         sprite.end();
