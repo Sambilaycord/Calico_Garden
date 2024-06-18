@@ -245,7 +245,11 @@ public class ShelfSystem implements Disposable {
     }
 
     private int calculateSellPrice(Plant plant) {
-        return plant.getPrice() / 2;
+        //if (plant.isFullyGrown){
+            //return plant.getPrice() * 2;
+        //}
+        //else{
+        return plant.getPrice() / 2;//}
     }
 
     @Override

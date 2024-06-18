@@ -101,7 +101,7 @@ public class ShopScreen implements Screen {
 
                         // Add the purchased plant to the game screen
                         game.addPlantToGameScreen(purchasedPlant);
-
+                        
                         // Update plantBounds with the correct position for the purchased plant
                         plantBounds[i].x = 650; // Set x position
                         plantBounds[i].y = 50; // Set y position

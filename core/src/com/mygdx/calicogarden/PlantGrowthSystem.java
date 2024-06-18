@@ -1,6 +1,7 @@
 package com.mygdx.calicogarden;
 
 public class PlantGrowthSystem {
+    private Plant[] plants;
     private boolean isFullyGrown;
     private boolean isWatered;
 
