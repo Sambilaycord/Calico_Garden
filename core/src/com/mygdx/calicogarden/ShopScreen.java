@@ -126,6 +126,7 @@ public class ShopScreen implements Screen {
 
         sprite.begin();
         sprite.draw(bg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        sprite.draw(exitButton, exitButtonBounds.x, exitButtonBounds.y);
         font.draw(sprite, "Coins: " + game.getCoins(), 20, 40);
 
 
