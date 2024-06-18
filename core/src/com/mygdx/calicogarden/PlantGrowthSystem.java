@@ -1,6 +1,7 @@
 package com.mygdx.calicogarden;
 
 public class PlantGrowthSystem {
+    private Plant[] plants;
     private boolean isFullyGrown;
     private boolean isWatered;
 
@@ -13,10 +14,9 @@ public class PlantGrowthSystem {
         if (isWatered) {
             isFullyGrown = true;
             isWatered = false;
-            System.out.println("BONER TIME!");
-        }
-        else {
-            System.out.println("cringe no grow");
+            System.out.println("The plant has grown!");
+        } else {
+            System.out.println("The plant needs water to grow.");
         }
     }
 

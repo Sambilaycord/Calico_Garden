@@ -12,24 +12,26 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.audio.Music;
 
 import java.text.DecimalFormat;
 
 public class GameScreen implements Screen {
+    public static final float SPEED = 10;
+
     private SpriteBatch sprite;
     private Texture bg;
     private Sprite cat;
     private Sprite shopLogo;
     private Sprite accessoryLogo;
+    private Sprite sellLogo;
     private CalicoGarden game;
     private OrthographicCamera camera;
     private ShelfSystem shelfSystem;
     private PlantGrowthSystem plantGrowthSystem;
     private Texture potTexture;
-    private Texture snapTexture;
     private BitmapFont font;
     private float timer = 0;
     private int day = 1; // Add a day variable
@@ -39,13 +41,14 @@ public class GameScreen implements Screen {
     private Rectangle shopLogoBounds;
     private Preferences prefs;
     private Rectangle[] plantBounds;
+    private Rectangle sellLogoBounds;
 
+    private Array<Plant> plantsToAdd;
 
     public GameScreen(CalicoGarden game) {
         this.game = game;
         this.camera = game.getCamera();
         font = new BitmapFont();
-        timer = 0;
         decimalFormat = new DecimalFormat("00"); // Format for two-digit numbers
 
         prefs = Gdx.app.getPreferences("CalicoGardenGameData");
@@ -56,118 +59,91 @@ public class GameScreen implements Screen {
         }
 
         currentDay = prefs.getInteger("day", 1);
+        sellLogo = new Sprite(new Texture("sell_icon.png"));
     }
-
 
     @Override
-public void show() {
-    sprite = new SpriteBatch();
-    bg = new Texture("GameScreen/GameScreenBackground.png");
-    cat = new Sprite(new Texture("ming.png"));
-    accessoryLogo = new Sprite(new Texture("accessory_icon.png"));
-    shopLogo = new Sprite(new Texture("shop_icon.png"));
-    potTexture = new Texture("Pots/pot.png");
-    snapTexture = new Texture("Pots/potSnap.png");
+    public void show() {
+        sprite = new SpriteBatch();
+        bg = new Texture("GameScreen/GameScreenBackground.png");
+        cat = new Sprite(new Texture("ming.png"));
+        accessoryLogo = new Sprite(new Texture("accessory_icon.png"));
+        shopLogo = new Sprite(new Texture("shop_icon.png"));
+        sellLogo = new Sprite(new Texture("sell_icon.png"));
+        potTexture = new Texture("Pots/pot.png");
 
-    day = prefs.getInteger("day", 1);
-    timer = prefs.getInteger("timeInSeconds", 0);
+        accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
+        shopLogoBounds = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
+        sellLogoBounds = new Rectangle(0, 300, sellLogo.getWidth(), sellLogo.getHeight());
 
-    accessoryLogoBounds = new Rectangle(0, 450, accessoryLogo.getWidth(), accessoryLogo.getHeight());
-    shopLogoBounds  = new Rectangle(0, 600, shopLogo.getWidth(), shopLogo.getHeight());
+        shelfSystem = new ShelfSystem(game.getPlants().toArray(new Plant[0]));
+        plantGrowthSystem = new PlantGrowthSystem();
 
-    shelfSystem = new ShelfSystem(game.getPlants().toArray(new Plant[0]));
-    plantGrowthSystem = new PlantGrowthSystem();
-
-    font.setColor(Color.ORANGE);
-
-    game.music();
-}
+        font.setColor(Color.ORANGE);
 
 
-@Override
-public void render(float delta) {
-    ScreenUtils.clear(0, 0, 0, 1);
-    shelfSystem.setPlantSize(0, 100, 100);
-    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-    // Get touch input for dragging and resizing
-    int x = Gdx.input.getX(0);
-    int y = Gdx.input.getY(0);
-    boolean isTouched = Gdx.input.isTouched(0);
-
-    int secondX = Gdx.input.isTouched(1) ? Gdx.input.getX(1) : x;
-    int secondY = Gdx.input.isTouched(1) ? Gdx.input.getY(1) : y;
-    boolean isSecondTouch = Gdx.input.isTouched(1);
-
-    // Update the shelf system with the touch input
-    shelfSystem.update(delta, x, y, isTouched, isSecondTouch, secondX, secondY, camera);
-
-    // Update UI elements
-    shopLogo.setPosition(0, 600);
-    accessoryLogo.setPosition(0, 450);
-
-    // Update the in-game timer
-    timer += delta * 480; // 480 in-game seconds per real second
-    int inGameSeconds = (int) timer;
-
-    if (inGameSeconds >= 86400) { // 86400 in-game seconds in 24 hours
-        day++;
-        timer -= 86400; // Reset the timer, keep the excess time
-        inGameSeconds = (int) timer;
+        game.music();
+        shelfSystem.loadState();
     }
 
-    int hours = (inGameSeconds / 3600) % 24;
-    int minutes = (inGameSeconds % 3600) / 60;
-    String formattedTime = decimalFormat.format(hours) + ":" + decimalFormat.format(minutes);
+    @Override
+    public void render(float delta) {
+        ScreenUtils.clear(0, 0, 0, 1);
+        shelfSystem.setPlantSize(0, 100, 100);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-    //Update plant growth
-    int previousDay = currentDay;
-    currentDay = day;
-    if (currentDay > previousDay) {
-        plantGrowthSystem.newDay();
+        int x = Gdx.input.getX(0);
+        int y = Gdx.input.getY(0);
+        boolean isTouched = Gdx.input.isTouched(0);
+
+        int secondX = Gdx.input.isTouched(1) ? Gdx.input.getX(1) : x;
+        int secondY = Gdx.input.isTouched(1) ? Gdx.input.getY(1) : y;
+        boolean isSecondTouch = Gdx.input.isTouched(1);
+
+        shelfSystem.update(delta, x, y, isTouched, isSecondTouch, secondX, secondY, camera, sellLogoBounds, game);
+
+        updateUIElements();
+        updateTime(delta);
+        updatePlantGrowth();
+
+        handleInput();
+
+        sprite.begin();
+        drawGameScreen();
+        sprite.end();
     }
 
-    // Handle input
-    handleInput();
-
-    // Begin sprite batch
-    sprite.begin();
-
-    // Draw background
-    sprite.draw(bg, 0, 0);
-
-    // Draw cat and logos
-    cat.setPosition(-110, -110);
-    cat.draw(sprite);
-    shopLogo.draw(sprite);
-    accessoryLogo.draw(sprite);
-
-    // Draw the shelf system (plants)
-    shelfSystem.draw(sprite);
-
-    // Draw additional plants from the game
-
-    // Call accessory method (if it handles additional drawing)
-    accessory();
-
-    // Update camera
-    camera.update();
-    sprite.setProjectionMatrix(camera.combined);
-
-    font.draw(sprite, "Coins: " + game.getCoins(), 200, 730);
-
-    font.draw(sprite, "Time: " + formattedTime, 200, 780);
-    font.draw(sprite, "Day: " + day, 400, 780);
-    if (plantGrowthSystem.isFullyGrown()) {
-        font.draw(sprite, "Plant is fully grown!", 100, 420);
+    private void updateUIElements() {
+        shopLogo.setPosition(0, 600);
+        accessoryLogo.setPosition(0, 450);
+        sellLogo.setPosition(0, 300);
     }
 
-    // End sprite batch
-    sprite.end();
-}
+    private void updateTime(float delta) {
+        timer += delta * 360; // 360 in-game seconds per real second
+        int inGameSeconds = (int) timer;
 
+        if (inGameSeconds >= 86400) { // 86400 in-game seconds in 24 hours
+            day++;
+            timer -= 86400; // Reset the timer, keep the excess time
+            inGameSeconds = (int) timer;
+        }
+    }
+
+    private void updatePlantGrowth() {
+        int previousDay = currentDay;
+        currentDay = day;
+        if (currentDay > previousDay) {
+            plantGrowthSystem.newDay();
+        }
+    }
 
     private void handleInput() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+            shelfSystem.resetState();
+        }
+
         if (Gdx.input.isTouched()) {
             Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
@@ -207,6 +183,40 @@ public void render(float delta) {
         }
     }
 
+    private void drawGameScreen() {
+        sprite.draw(bg, 0, 0);
+        cat.setPosition(-110, -110);
+        cat.draw(sprite);
+        shopLogo.draw(sprite);
+        accessoryLogo.draw(sprite);
+        if (sellLogo != null) {
+            sellLogo.draw(sprite);
+        }
+
+        shelfSystem.draw(sprite);
+
+        accessory();
+
+        camera.update();
+        sprite.setProjectionMatrix(camera.combined);
+
+        int inGameSeconds = (int) timer;
+        int hours = (inGameSeconds / 3600) % 24;
+        int minutes = (inGameSeconds % 3600) / 60;
+        String formattedTime = decimalFormat.format(hours) + ":" + decimalFormat.format(minutes);
+
+        font.draw(sprite, "Coins: " + game.getCoins(), 200, 730);
+        font.draw(sprite, "Time: " + formattedTime, 200, 780);
+        font.draw(sprite, "Day: " + day, 400, 780);
+        if (plantGrowthSystem.isFullyGrown()) {
+            font.draw(sprite, "Plant is fully grown!", 100, 420);
+        }
+    }
+
+    public void addPlantToGameScreen(Plant plant) {
+        plantsToAdd.add(plant);
+    }
+
     public void accessory() {
         Texture accessory = game.getSelectedAccessory();
         if (accessory != null) {
@@ -215,10 +225,6 @@ public void render(float delta) {
             accessorySprite.setPosition(-110, -110); // Adjust position to be on top of the cat
             accessorySprite.draw(sprite);
         }
-    }
-
-    public void timer() {
-        // Not implemented
     }
 
     @Override
@@ -230,9 +236,7 @@ public void render(float delta) {
 
     @Override
     public void pause() {
-        prefs.putInteger("day", day);
-        prefs.putInteger("timeInSeconds", (int) timer);
-        prefs.flush();
+        // Not implemented
     }
 
     @Override
