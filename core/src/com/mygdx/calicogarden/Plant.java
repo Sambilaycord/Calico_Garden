@@ -61,12 +61,25 @@ public class Plant {
 
     public float getWidth() {
         return width;
-      }
-    
-      public float getHeight() {
+    }
+
+    public float getHeight() {
         return height;
-      }
+    }
 
+    public float getX() {
+        return x;
+    }
 
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public void setY(float y) {
+        this.y = y;
+    }
 }
-
