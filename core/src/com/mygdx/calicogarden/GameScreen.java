@@ -42,7 +42,6 @@ public class GameScreen implements Screen {
     private Preferences prefs;
     private Rectangle[] plantBounds;
     private Rectangle sellLogoBounds;
-    private int sellPrice;
     private Array<Plant> plantsToAdd;
 
     public GameScreen(CalicoGarden game) {
@@ -80,8 +79,6 @@ public class GameScreen implements Screen {
         plantGrowthSystem = new PlantGrowthSystem();
 
         font.setColor(Color.ORANGE);
-
-        sellPrice = 10;
 
         game.music();
         shelfSystem.loadState();

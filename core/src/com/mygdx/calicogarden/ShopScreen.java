@@ -64,7 +64,7 @@ public class ShopScreen implements Screen {
         // Initialize plant bounds
         plantBounds = new Rectangle[plants.length];
         for (int i = 0; i < plants.length; i++) {
-            plantBounds[i] = new Rectangle(220 + i * 120, 300, 100 * 2, 100 * 2);
+            plantBounds[i] = new Rectangle(280 + i * 120, 300, 100 * 2, 100 * 2);
         }
 
 
@@ -132,7 +132,7 @@ public class ShopScreen implements Screen {
 
         // Draw plants
         for (int i = 0; i < plants.length; i++) {
-            sprite.draw(plantsDisplay[i].getTexture(), 220 + i * 120, 300, plantBounds[i].width, plantBounds[i].height);
+            sprite.draw(plantsDisplay[i].getTexture(), 280 + i * 120, 300, plantBounds[i].width, plantBounds[i].height);
         }
 
         sprite.end();
