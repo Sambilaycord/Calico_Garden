@@ -153,8 +153,8 @@ public class ShelfSystem implements Disposable {
                 // First plant
                 batch.draw(plants[i].getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width * 2, plantBounds[i].height * 2);
                 // Scale the rectangle for the first plant
-                plantBounds[i].width = originalWidths[i];
-                plantBounds[i].height = originalHeights[i];
+                plantBounds[i].width = originalWidths[i] * 2;
+                plantBounds[i].height = originalHeights[i] * 2;
             } else {
                 // Second and subsequent plants
                 batch.draw(plants[i].getTexture(), plantBounds[i].x, plantBounds[i].y, (plantBounds[i].width), (plantBounds[i].height));
