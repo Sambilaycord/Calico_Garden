@@ -43,7 +43,7 @@ public class CalicoGarden extends Game {
         shopScreen = new ShopScreen(this);
         batch.setProjectionMatrix(camera.combined);
 
-        coins = 30; // Initialize coins
+        coins = 15000; // Initialize coins
         plants = new ArrayList<>();
 
         shelfSystem = new ShelfSystem(plants.toArray(new Plant[0]));

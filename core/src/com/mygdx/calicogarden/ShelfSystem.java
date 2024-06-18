@@ -19,8 +19,6 @@ public class ShelfSystem implements Disposable {
     private int draggingIndex;
     private int resizingIndex;
     private float initialDistance;
-
-    // Add these fields to store the original sizes of the plants
     private float[] originalWidths;
     private float[] originalHeights;
 
@@ -32,8 +30,8 @@ public class ShelfSystem implements Disposable {
         originalWidths = new float[plants.length];
         originalHeights = new float[plants.length];
         for (int i = 0; i < plants.length; i++) {
-            Texture plantTexture = plants[i].getTexture(); 
-            float plantWidth = plantTexture.getWidth(); 
+            Texture plantTexture = plants[i].getTexture();
+            float plantWidth = plantTexture.getWidth();
             float plantHeight = plantTexture.getHeight();
             plantBounds[i] = new Rectangle(650, 50, plantWidth, plantHeight);
             originalWidths[i] = plantWidth;
@@ -41,7 +39,7 @@ public class ShelfSystem implements Disposable {
         }
 
         // Initialize lock positions array
-        lockPositionsArray = new float[][] {
+        lockPositionsArray = new float[][]{
                 {50f, 450f, 1100f},
                 {250f, 350f, 1340f},
                 {460f, 450f, 1300f},
@@ -109,7 +107,6 @@ public class ShelfSystem implements Disposable {
                     }
                 }
             } else {
-                // Apply offsets here
                 plantBounds[draggingIndex].x = cursorPos.x - plantBounds[draggingIndex].width / 2;
                 plantBounds[draggingIndex].y = cursorPos.y - plantBounds[draggingIndex].height / 2;
                 System.out.println("Dragging plant_" + draggingIndex + " to x: " + plantBounds[draggingIndex].x + " and y: " + plantBounds[draggingIndex].y);
@@ -134,7 +131,7 @@ public class ShelfSystem implements Disposable {
 
     private int getClosestLockPosition(float y) {
         int closestIndex = 0;
-        float closestDistance = Math.abs(lockPositionsArray[0][0] - y); // Initialize with first lock
+        float closestDistance = Math.abs(lockPositionsArray[0][0] - y);
 
         for (int i = 1; i < lockPositionsArray.length; i++) {
             float distance = Math.abs(lockPositionsArray[i][0] - y);
@@ -143,32 +140,25 @@ public class ShelfSystem implements Disposable {
                 closestDistance = distance;
             }
         }
-
         return closestIndex;
     }
 
     public void draw(SpriteBatch batch) {
         for (int i = 0; i < plants.length; i++) {
             if (i == 0) {
-                // First plant
                 batch.draw(plants[i].getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width * 2, plantBounds[i].height * 2);
-                // Scale the rectangle for the first plant
                 plantBounds[i].width = originalWidths[i];
                 plantBounds[i].height = originalHeights[i];
             } else {
-                // Second and subsequent plants
-                batch.draw(plants[i].getTexture(), plantBounds[i].x, plantBounds[i].y, (plantBounds[i].width), (plantBounds[i].height));
-                // Scale the rectangles for the second and subsequent plants
-                plantBounds[i].width = (originalWidths[i] / 10) * 2;
-                plantBounds[i].height = (originalHeights[i] / 10) * 2;
+                batch.draw(plants[i].getTexture(), plantBounds[i].x, plantBounds[i].y, plantBounds[i].width, plantBounds[i].height);
+                plantBounds[i].width = originalWidths[i] / 10 * 2;
+                plantBounds[i].height = originalHeights[i] / 10 * 2;
             }
         }
     }
 
     public void saveState() {
         Preferences prefs = Gdx.app.getPreferences("PlantState");
-
-        // Clear the existing preferences before saving the new state
         prefs.clear();
 
         for (int i = 0; i < plants.length; i++) {
@@ -178,8 +168,8 @@ public class ShelfSystem implements Disposable {
             prefs.putFloat("plant_" + i + "_height", plantBounds[i].height);
             prefs.putBoolean("plant_" + i + "_isLocked", isLocked[i]);
 
-            System.out.println("Saving plant_" + i + " x: " + plantBounds[i].x + ", y: " + plantBounds[i].y + 
-                               ", width: " + plantBounds[i].width + ", height: " + plantBounds[i].height);
+            System.out.println("Saving plant_" + i + " x: " + plantBounds[i].x + ", y: " + plantBounds[i].y +
+                    ", width: " + plantBounds[i].width + ", height: " + plantBounds[i].height);
         }
 
         prefs.flush();
@@ -197,11 +187,10 @@ public class ShelfSystem implements Disposable {
             plantBounds[i] = new Rectangle(x, y, width, height);
 
             isLocked[i] = prefs.getBoolean("plant_" + i + "_isLocked", isLocked[i]);
-            System.out.println("Loaded plant_" + i + " x: " + x + ", y: " + y + 
-                               ", width: " + width + ", height: " + height);
+            System.out.println("Loaded plant_" + i + " x: " + x + ", y: " + y +
+                    ", width: " + width + ", height: " + height);
         }
     }
-
 
     public float[][] getLockPositionsArray() {
         return lockPositionsArray;
@@ -209,11 +198,10 @@ public class ShelfSystem implements Disposable {
 
     public void resetState() {
         Preferences prefs = Gdx.app.getPreferences("PlantState");
-        prefs.clear(); // This will remove all key-value pairs from the preferences
+        prefs.clear();
         prefs.flush();
         System.out.println("Preferences cleared.");
 
-        // Reset plant positions and sizes to their original values
         for (int i = 0; i < plants.length; i++) {
             plantBounds[i].x = 650;
             plantBounds[i].y = 50;
@@ -221,11 +209,11 @@ public class ShelfSystem implements Disposable {
             plantBounds[i].height = originalHeights[i];
             isLocked[i] = false;
 
-            System.out.println("Reset plant_" + i + " to x: " + plantBounds[i].x + ", y: " + plantBounds[i].y + 
-                               ", width: " + plantBounds[i].width + ", height: " + plantBounds[i].height);
+            System.out.println("Reset plant_" + i + " to x: " + plantBounds[i].x + ", y: " + plantBounds[i].y +
+                    ", width: " + plantBounds[i].width + ", height: " + plantBounds[i].height);
         }
 
-        saveState(); // Save the default state after resetting
+        saveState();
     }
 
     public void setPlantSize(int index, float width, float height) {
@@ -248,18 +236,16 @@ public class ShelfSystem implements Disposable {
             int sellPrice = calculateSellPrice(plant);
             game.setCoins(game.getCoins() + sellPrice);
             game.removePlant(plantIndex);
-            
-            // Move the sold plant out of the screen
-            plantBounds[plantIndex].x = -1000; // Move it outside the left boundary
-            plantBounds[plantIndex].y = -1000; // Move it outside the bottom boundary
-            
+
+            plantBounds[plantIndex].x = -1000;
+            plantBounds[plantIndex].y = -1000;
+
             System.out.println("Sold " + plant.getName() + " for " + sellPrice + " coins!");
         }
     }
 
     private int calculateSellPrice(Plant plant) {
-        // Example logic: Calculate sell price based on plant details
-        return 10; // Example sell price, replace with your logic
+        return 10;
     }
 
     @Override
