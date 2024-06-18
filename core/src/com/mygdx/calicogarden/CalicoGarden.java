@@ -2,7 +2,6 @@ package com.mygdx.calicogarden;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -12,8 +11,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
 
 public class CalicoGarden extends Game {
     private GameScreen gameScreen;
@@ -22,7 +19,7 @@ public class CalicoGarden extends Game {
     private OrthographicCamera camera;
     private Texture selectedAccessory;
     public SpriteBatch batch;
-    private int coins;    // Coin counter variable
+    private int coins; // Coin counter variable
     private BitmapFont font; // For displaying text
     private float potX = -1; // Initialize with an invalid position
     private float potY = -1;
@@ -32,6 +29,7 @@ public class CalicoGarden extends Game {
     private Sound sfx;
     private Music bgm1;
     private Music bgm2;
+    private ShelfSystem shelfSystem;
 
     @Override
     public void create() {
@@ -43,9 +41,12 @@ public class CalicoGarden extends Game {
         gameScreen = new GameScreen(this);
         accessoryMenu = new AccessoryMenu(this);
         shopScreen = new ShopScreen(this);
+        batch.setProjectionMatrix(camera.combined);
 
         coins = 30; // Initialize coins
         plants = new ArrayList<>();
+
+        shelfSystem = new ShelfSystem(plants.toArray(new Plant[0]));
 
         bgm1 = Gdx.audio.newMusic(Gdx.files.internal("music/bgm3.mp3"));
         bgm2 = Gdx.audio.newMusic(Gdx.files.internal("music/bgm2.mp3"));
@@ -59,7 +60,7 @@ public class CalicoGarden extends Game {
     public void addCoins(int amount) {
         coins += amount;
     }
-    
+
     // Method to decrease coins
     public void subtractCoins(int amount) {
         coins -= amount;
@@ -67,7 +68,7 @@ public class CalicoGarden extends Game {
             coins = 0; // Ensure coins don't go negative
         }
     }
-    
+
     // Method to get current coins
     public int getCoins() {
         return coins;
@@ -84,6 +85,12 @@ public class CalicoGarden extends Game {
 
     public void showShopScreen() {
         setScreen(shopScreen);
+    }
+
+    public void removePlant(int index) {
+        if (index >= 0 && index < plants.size()) {
+            plants.remove(index);
+        }
     }
 
     public void showAccessoryMenu() {
@@ -110,7 +117,6 @@ public class CalicoGarden extends Game {
         return plants;
     }
 
-
     public OrthographicCamera getCamera() {
         return camera;
     }
@@ -128,7 +134,7 @@ public class CalicoGarden extends Game {
         return potY;
     }
 
-    public void music(){
+    public void music() {
         Screen currentScreen = getScreen();
         if (currentScreen instanceof CatAnimation) {
             bgm1.play();
@@ -137,4 +143,10 @@ public class CalicoGarden extends Game {
             bgm2.play();
         }
     }
+
+    public ShelfSystem getShelfSystem() {
+        return shelfSystem;
+    }
+    
 }
+
